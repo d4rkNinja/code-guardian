@@ -1,0 +1,9 @@
+{
+  "name": "d4rkNinja",
+  "owner": {"name": "d4rkNinja"},
+  "plugins": [{
+    "name": "doc-generator",
+    "source": "./docs-workspace",
+    "description": "Technical Documentation Generator"
+  }]
+}
