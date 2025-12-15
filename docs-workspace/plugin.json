@@ -1,0 +1,9 @@
+{
+  "name": "docs",
+  "description": "Reviews code for bugs and improvements",
+  "version": "1.0.0",
+  "author": {"name": "d4rkNinja"},
+  "commands": ["./commands/review.md"],
+  "agents":["./agents/docbook.json"],
+  "skills":["./skills/SKILL.md"]
+}
