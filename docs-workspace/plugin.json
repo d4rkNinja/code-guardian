@@ -1,29 +1,9 @@
 {
-  "name": "code-guardian",
-  "description": "Advanced Documentation Generator & Security Analysis Plugin - Deep technical documentation with multi-layer security scanning",
+  "name": "docs",
+  "description": "Reviews code for bugs and improvements",
   "version": "1.0.0",
-  "author": {"name": "d4rkNinja", "url": "https://github.com/d4rkNinja"},
-  "homepage": "https://github.com/d4rkNinja/code-guardian",
-  "repository": {"type": "git", "url": "https://github.com/d4rkNinja/code-guardian.git"},
-  "keywords": ["documentation", "security", "code-analysis", "tech-specification", "owasp", "vulnerability-scanning"],
+  "author": {"name": "d4rkNinja"},
   "commands": ["./commands/review.md"],
-  "agents": ["./agents/docbook.md"],
-  "skills": [
-    "./skills/SKILL.md",
-    "./skills/python_docbook.md",
-    "./skills/react_docbook.md",
-    "./skills/vue_docbook.md",
-    "./skills/rust_docbook.md",
-    "./skills/node_docbook.md",
-    "./skills/java_docbook.md",
-    "./skills/dotnet_docbook.md",
-    "./skills/go_docbook.md",
-    "./skills/php_docbook.md",
-    "./skills/nest_docbook.md",
-    "./skills/next_docbook.md",
-    "./skills/react_native_docbook.md"
-  ],
-  "permissions": ["read", "write", "network"],
-  "category": "Documentation & Security",
-  "license": "MIT"
+  "agents":["./agents/docbook.json"],
+  "skills":["./skills/SKILL.md"]
 }
