@@ -5,5 +5,9 @@
     "name": "doc-generator",
     "source": "./docs-workspace",
     "description": "Technical Documentation Generator"
+  }, {
+    "name": "security-scanner",
+    "source": "./sec-workspace",
+    "description": "Comprehensive Security Scanner"
   }]
 }
