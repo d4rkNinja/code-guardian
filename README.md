@@ -20,7 +20,7 @@ Comprehensive security vulnerability scanner with Sentinel agent.
 ### Install Plugins
 ```bash
 # Documentation plugin
-/plugin install docs@d4rkNinja
+/plugin install docbook@d4rkNinja
 
 # Security plugin
 /plugin install sentinel@d4rkNinja
