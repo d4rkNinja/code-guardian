@@ -28,19 +28,26 @@ Comprehensive security vulnerability scanner with Sentinel agent.
 
 ## Usage
 
-### Security Plugin
+### Using Agents
+
 ```bash
-# Full security scan
-/scan --full
+# Use Sentinel agent for security analysis
+@sentinel "Analyze this codebase for security vulnerabilities"
 
-# Scan dependencies only
-/scan --deps
+# Scan specific file for vulnerabilities
+@sentinel "Check src/auth/login.js for SQL injection vulnerabilities"
 
-# Scan specific files
-/scan --files "src/**/*.js"
+# Analyze dependencies
+@sentinel "Scan package.json for vulnerable dependencies"
 
-# Critical issues only
-/scan --severity critical
+# Get security recommendations
+@sentinel "What are the critical security issues in this project?"
+
+# Use DocBook agent for documentation
+@docbook "Generate technical documentation for this project"
+
+# Document specific component
+@docbook "Create API documentation for the user service"
 ```
 
 ## Supported Technologies

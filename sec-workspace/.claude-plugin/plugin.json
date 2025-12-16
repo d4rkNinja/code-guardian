@@ -3,7 +3,6 @@
   "description": "Advanced security vulnerability scanner and remediation advisor",
   "version": "1.0.0",
   "author": {"name": "d4rkNinja"},
-  "commands": ["./commands/scan.md"],
   "agents":["./agents/sentinel.md"],
   "skills":["./skills/SKILL.md"]
 }
