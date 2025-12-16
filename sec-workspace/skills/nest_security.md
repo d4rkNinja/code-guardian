@@ -563,6 +563,37 @@ async function bootstrap() {
 - [ ] Error handling doesn't leak info
 - [ ] Dependencies updated regularly
 
+## Advanced NestJS Security Discovery (Discovery Focus)
+
+### 1. Decorator Security Analysis
+**Methodology**: Checking if guards are actually applied to controllers/methods.
+*   **Audit**: Manual or regex check for public endpoints.
+    *   Find all `@Controller` and `@Get/@Post`.
+    *   Verify `@UseGuards` or `@Auth` decorator exists.
+*   **Zero Tolerance**: Any endpoint exposing `@Post` without a Guard or `@Public()` explicit tag is **CRITICAL**.
+
+### 2. Custom Validator Fuzzing
+**Methodology**: `class-validator` custom decorators often fail to handle non-string inputs safely.
+*   **Audit**: Grep for `@ValidatorConstraint`.
+*   **Fuzz**: Pass `numbers`, `arrays`, and `null` to fields expecting `strings` in custom validators.
+*   **Pattern**:
+    ```typescript
+    validate(text: string) { return text.includes('foo'); } // CRASH if text is number
+    ```
+
+### 3. Dependency Injection Graph Manipulation
+**Methodology**: Ensure `Scope.REQUEST` providers don't cache sensitive data.
+*   **Audit**: Grep for `{ scope: Scope.REQUEST }`.
+*   **Risk**: If a singleton service injects a request-scoped service, it might hold onto user data effectively executing a "Cross-User Data Leak".
+*   **Check**: Verify usage of `REQUEST` scoped providers.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Interceptors must not mutate Exceptions to leak details.
+*   **Check**:
+    1.  Review `ExceptionFilter`.
+    2.  Ensure `exception.stack` is never assigned to the `response` body.
+    3.  Verify that `ClassSerializerInterceptor` is globally enabled (`app.useGlobalInterceptors`).
+
 ## References
 - [NestJS Security](https://docs.nestjs.com/security/authentication)
 - [OWASP API Security](https://owasp.org/www-project-api-security/)

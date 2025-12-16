@@ -451,7 +451,43 @@ public class UserController {
 - [ ] Input validation
 - [ ] Dependencies updated
 
-## Web Search Queries
+## Advanced Java Security Discovery (Discovery Focus)
+
+### 1. Fuzzing with Jazzer (Coverage-Guided)
+**Methodology**: Fuzz Java parsing logic specifically.
+*   **Technique**: Use `Jazzer` (based on libFuzzer).
+*   **Action**:
+    ```bash
+    # Run jazzer on a strict parser class
+    ./jazzer --cp=target/classes --target_class=com.example.XMLParser --autofuzz
+    ```
+*   **Target**: Fuzz classes that implement `Serializable`, `Externalizable`, or parse `JSON/XML`.
+
+### 2. Deserialization Gadget Chain Discovery
+**Methodology**: Detect classes that can be abused during `readObject()`.
+*   **Technique**: Use `GadgetInspector` (static analysis).
+*   **Manual**: Search for classes with `readObject` that invoke abstract methods/interfaces.
+    ```java
+    // Risky Pattern: Invoking a user-controlled object in readObject
+    private void readObject(ObjectInputStream ois) {
+        ois.defaultReadObject();
+        ((Runnable) this.callback).run(); // CODE EXECUTION
+    }
+    ```
+
+### 3. SpEL Injection Discovery
+**Methodology**: Find places where user strings enter `ExpressionParser`.
+*   **Audit**: Grep for `parseExpression(`.
+*   **Trace**: Check if the argument comes from HTTP parameters.
+*   **Payload**: `T(java.lang.Runtime).getRuntime().exec("id")`
+*   **Zero Tolerance**: If ExpressionParser evaluates variable input, flag as **CRITICAL**.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Verify logger usage does not leak sensitive entities.
+*   **Checks**:
+    1.  **ToString()**: Check if `User` or `CreditCard` classes generate `toString()` with secrets.
+    2.  **Log4j Config**: Ensure sensitive fields are masked in `PatternLayout`.
+    3.  **Exception Handling**: Ensure `e.printStackTrace()` is never sent to `HttpServletResponse`.
 ```
 "[package-name]" maven CVE vulnerability
 "[package-name]" security advisory

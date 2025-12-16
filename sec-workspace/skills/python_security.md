@@ -498,6 +498,52 @@ async def create_item(
 - [ ] Error messages don't leak info
 - [ ] Logging configured properly
 
+## Advanced Python Security Discovery (Discovery Focus)
+
+### 1. Fuzzing with Atheris (Google)
+**Methodology**: Coverage-guided fuzzing to find unexpected crashes/exceptions.
+*   **Technique**: Use `atheris` (libFuzzer for Python).
+*   **Action**: Create a fuzz harness for critical parsers (XML, JSON, custom formats).
+    ```python
+    import atheris
+    import sys
+    
+    def TestOneInput(data):
+        try:
+            my_risky_parser(data)
+        except ValueError:
+            pass # Expected
+        except Exception:
+            raise # Unexpected crash -> Vulnerability
+            
+    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Fuzz()
+    ```
+
+### 2. SSTI Payload Discovery
+**Methodology**: Detect if user input is evaluated as a template.
+*   **Technique**: Inject mathematical payloads into all string fields.
+*   **Payloads**:
+    *   `{{7*7}}` -> `49` (Jinja2)
+    *   `${7*7}` -> `49` (Mako)
+    *   `{{config}}` -> Dumps Flask configuration
+    *   `{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}` (RCE)
+*   **Action**: Grep codebase for `render_template_string` (Flask) or `Template(` (Django/Jinja2).
+
+### 3. Deserialization Gadget Discovery
+**Methodology**: Assume `pickle` is being used safely, check for transitive unsafe usage.
+*   **Audit**:
+    1.  Search for `pickle.load` or `dill.load`.
+    2.  Trace the input variable back to `request.body` or `redis`.
+    3.  **Zero Tolerance**: If unauthenticated input reaches `pickle.load`, flag as **CRITICAL RCE**.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Inspect logs and database for unintentional leakage.
+*   **Checks**:
+    1.  **Sentry/Logs**: Search logs for "password", "token", "ssn".
+    2.  **Django Debug Toolbar**: Ensure it's STRIPPED in production builds (check `requirements.txt`).
+    3.  **Exception Leaks**: Trigger 500 errors and check if stack traces are returned to the client.
+
 ## Web Search Queries
 ```
 "[package-name]" python CVE security vulnerability

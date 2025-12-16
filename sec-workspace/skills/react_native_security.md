@@ -256,6 +256,38 @@ module.exports = {
 - [ ] Biometric authentication
 - [ ] Code obfuscation for production
 
+## Advanced React Native Security Discovery (Discovery Focus)
+
+### 1. Deep Link Fuzzing
+**Methodology**: `Linking.getInitialURL` is an unauthenticated entry point.
+*   **Technique**: Use `adb` to fire intents.
+    ```bash
+    adb shell am start -W -a android.intent.action.VIEW -d "myapp://admin/reset-password"
+    ```
+*   **Action**: Fuzz parameters in the URL scheme.
+    *   `myapp://webview?url=javascript:alert(1)` (XSS in WebView)
+    *   `myapp://profile?id=../` (Path Traversal logic)
+
+### 2. Local Storage Forensics
+**Methodology**: Dump app data from a rooted device/emulator.
+*   **Audit**:
+    1.  `adb shell run-as com.myapp ls /data/data/com.myapp/shared_prefs/`
+    2.  Check for `AsyncStorage` implementations (usually SQLite or XML).
+    3.  **Zero Tolerance**: If `grep -r "ey..."` (JWT) finds a valid token in plain text XML/SQLite, flag as **CRITICAL**.
+
+### 3. Bridge Injection Discovery
+**Methodology**: React Native Bridge allows JS to call Native modules.
+*   **Audit**: Check custom Native Modules (`@ReactMethod`).
+*   **Risk**: If a `String` argument passed from JS is used in `Runtime.exec()` or SQL on the native side without validation.
+*   **Fuzz**: Pass null bytes `%00` or huge strings to native methods from JS.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: No sensitive data in Logcat/XCode Logs.
+*   **Check**:
+    1.  Connect device, run `adb logcat | grep "token"`.
+    2.  Check for Redux Logger middleware enabled in production.
+    3.  Verify Screenshots/Snapshots (Task Switcher) do not show sensitive screens (use `react-native-privacy-snapshot`).
+
 ## References
 - [OWASP Mobile Security](https://owasp.org/www-project-mobile-security/)
 - [React Native Security](https://reactnative.dev/docs/security)

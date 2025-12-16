@@ -509,7 +509,40 @@ if (wp_verify_nonce($_POST['_wpnonce'], 'my_action')) {
 - [ ] Proper file permissions
 - [ ] No execution of uploaded files
 
-## Web Search Queries
+- [ ] No execution of uploaded files
+
+## Advanced PHP Security Discovery (Discovery Focus)
+
+### 1. Deserialization with PHPGGC
+**Methodology**: Detect object injection beyond simple `unserialize` grep.
+*   **Technique**: Use `PHPGGC` to generate gadget chains for installed libraries (Laravel/Symfony).
+*   **Action**:
+    1.  Identify any user input passed to `unserialize()`.
+    2.  Check if `phar://` wrapper can be triggered via `file_exists()` or `fopen()`.
+    3.  Generate payloads: `./phpggc Laravel/RCE1 system "id"` and inject.
+
+### 2. Type Juggling Fuzzing
+**Methodology**: Detect loose comparison bypasses.
+*   **Audit**: Grep for `==` and `!=` involving hashes or tokens.
+*   **Payloads**:
+    *   Magic Hashes: `0e123...` (MD5 collision)
+    *   Array bypass: `param[]=1` (e.g. `strcmp([], "string")` returns `NULL` which is falsy/0 in older PHP).
+    *   JSON bypass: `{"param": true}` (vs string "true").
+
+### 3. Wrapper Injection Discovery
+**Methodology**: Identify LFI via PHP protocols.
+*   **Audit**: Grep for `include`, `require`, `fopen`, `file_get_contents`.
+*   **Payloads**:
+    *   `php://filter/convert.base64-encode/resource=index.php` (Read source code)
+    *   `data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7Pz4=` (RCE)
+    *   `expect://id` (Command execution, requires plugin)
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Prevent debug leakage.
+*   **Check**:
+    1.  Ensure `phpinfo()` is NEVER reachable.
+    2.  Check if `.env` or `config.php` are accessible via web (try direct URL).
+    3.  Verify `display_errors` is OFF. Matches of "Fatal error:" in HTTP responses = **CRITICAL**.
 ```
 "[package-name]" composer CVE vulnerability
 "[package-name]" packagist security advisory

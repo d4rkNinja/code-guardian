@@ -71,7 +71,40 @@ For each identified vulnerability:
 4. **Data Flow Analysis**: Does user input reach vulnerable code?
 5. **Environment Context**: Is this a dev-only or production dependency?
 
-### Phase 3: Risk Assessment
+### Phase 3: Advanced Vulnerability Discovery (Discovery over Checking)
+
+**Logic**: Move beyond static pattern matching. Actively hunt for vulnerabilities using dynamic analysis, data flow tracing, and fuzzing methodologies.
+
+#### A. Taint Analysis & Data Flow Tracing
+*   **Concept**: Trace data from "Sources" (user input, API responses, files) to "Sinks" (DB queries, HTML output, shell commands).
+*   **Action**:
+    1.  **Identify Sources**: Map all entry points (`req.body`, `argv`, `params`, `headers`).
+    2.  **Identify Sinks**: Map dangerous functions (`eval()`, `exec()`, `innerHTML`, `SQL execution`).
+    3.  **Trace Flow**: Manually or tool-assist trace if input reaches a sink without a "sanitizer" step.
+    4.  **Zero Tolerance**: If ANY user input reaches a sensitive sink without strict validation, flag as **CRITICAL**.
+
+#### B. Fuzzing & Property-Based Testing
+*   **Concept**: Bombard functions with massive amounts of random, malformed, or boundary-case data to trigger crashes or unexpected behaviors.
+*   **Action**:
+    1.  **Generative Fuzzing**: Use tools (like `Atheris` for Python, `Jazzer` for Java) to generate random inputs.
+    2.  **Structure-Aware Fuzzing**: Generate inputs that follow valid structures (JSON, XML) but contain malicious payloads.
+    3.  **Boundary Testing**: Specifically test empty strings, max integer values, unicode characters, and null bytes.
+
+#### C. Manual Logic Abusability
+*   **Concept**: Code may be secure syntactically but insecure logically (e.g., race conditions, price manipulation).
+*   **Action**:
+    1.  **Race Conditions**: Identify concurrent state updates (db transactions, file writes).
+    2.  **Business Logic**: Can you buy an item for $0? Can you access data ID+1?
+    3.  **State Manipulation**: Can you skip a step in a multi-step flow?
+
+#### D. Zero Tolerance Data Compromise Check
+*   **Mandate**: **Any** potential for data compromise (minor or major) must be flagged.
+*   **Checks**:
+    1.  **Leakage**: Are PII, secrets, or internal IDs exposed in logs, error messages, or API responses?
+    2.  **Integrity**: Can data be modified without authorization?
+    3.  **Availability**: Can a payload cause a crash or high resource consumption (DoS)?
+
+### Phase 4: Risk Assessment
 
 #### Severity Classification
 ```
@@ -110,7 +143,7 @@ For each identified vulnerability:
 - **Scope**: What's affected? (Single user, All users, System-wide)
 - **Exposure**: Who can exploit? (Internet, Authenticated users, Admins only)
 
-### Phase 4: Remediation Planning
+### Phase 5: Remediation Planning
 
 #### Remediation Strategies
 1. **Immediate Fixes** (Critical/High)

@@ -353,6 +353,33 @@ module.exports = {
 - [ ] Rate limiting
 - [ ] Security headers configured
 
+## Advanced Next.js Security Discovery (Discovery Focus)
+
+### 1. Server Action Fuzzing (React Server Components)
+**Methodology**: Server Actions are public API endpoints even if not documented.
+*   **Audit**: Grep for `'use server'`. every export is a public endpoint.
+*   **Test**: Are there arguments that are complex objects?
+*   **Fuzz**: Invoke the action (via `fetch` to the hashed endpoint id if possible, or by replaying the POST request) with unexpected types.
+*   **Zero Tolerance**: If a Server Action takes `userId` as an argument without checking `session.user.id`, flag as **CRITICAL IDOR**.
+
+### 2. Middleware Bypass Detection
+**Methodology**: Next.js Middleware regex matchers can be tricky.
+*   **Audit**: Check `matcher` in `middleware.ts`.
+*   **Bypass**: Can you access `/api/admin` via `/API/ADMIN`? Or `/_next/../api/admin`?
+*   **Test**: Fuzz UUID paths and casing to see if middleware logic is skipped.
+
+### 3. ISR / Cache Poisoning
+**Methodology**: manipulating headers to poison the cache for other users.
+*   **Audit**: Check usages of `revalidateTag` or `revalidatePath` triggered by user input.
+*   **Risk**: If a user can trigger a revalidation with malicious content that gets cached for everyone.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Secrets in Client Bundles.
+*   **Check**:
+    1.  Grep `.next/static/chunks` for `SECRET_KEY`, `API_KEY`.
+    2.  Ensure `NEXT_PUBLIC_` is ONLY used for non-sensitive data.
+    3.  Flag any `process.env` usage in client components that is not prefixed with `NEXT_PUBLIC_` (it won't be replaced, but might be leaking code intent).
+
 ## References
 - [Next.js Security](https://nextjs.org/docs/advanced-features/security-headers)
 - [OWASP API Security](https://owasp.org/www-project-api-security/)

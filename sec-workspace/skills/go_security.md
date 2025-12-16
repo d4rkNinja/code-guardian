@@ -500,6 +500,41 @@ router.Use(limiter.NewMiddleware(store, rate))
 - [ ] Input validation
 - [ ] Dependencies updated (govulncheck)
 
+## Advanced Go Security Discovery (Discovery Focus)
+
+### 1. Fuzzing with Go Native Fuzzing (1.18+)
+**Methodology**: Use Go's built-in fuzzer to crash parsers and logic.
+*   **Technique**: Write `FuzzXxx(f *testing.F)` functions.
+*   **Action**:
+    ```go
+    func FuzzParseQuery(f *testing.F) {
+        f.Add("key=value")
+        f.Fuzz(func(t *testing.T, input string) {
+            ParseQuery(input) // Look for panics/crashes
+        })
+    }
+    ```
+*   **Run**: `go test -fuzz=FuzzParseQuery`
+
+### 2. Race Detector in CI
+**Methodology**: Catch concurrency bugs that lead to data corruption.
+*   **Action**:
+    1.  Add `-race` flag to all test runs: `go test -race ./...`.
+    2.  Use `uber-go/goleak` to detect goroutine leaks in tests.
+
+### 3. SSRF & Unsafe Pointer Discovery
+**Methodology**: Find where network calls accept user input.
+*   **Audit**: Grep for `http.Get(`, `http.NewRequest(`, `net.Dial(`.
+*   **Trace**: Backtrack arguments to `func` params.
+*   **Unsafe**: Grep for `unsafe.Pointer` usage which bypasses Go type safety.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Prevent leakage of goroutine stacks and pprof data.
+*   **Check**:
+    1.  Ensure `pprof` routes (`/debug/pprof`) are NOT exposed on public ports.
+    2.  Check if `panic` output includes environment variables.
+    3.  Flag any usage of `fmt.Println(secret)` -> must use `fmt.Println("REDACTED")`.
+
 ## Web Search Queries
 ```
 "[package-name]" go CVE vulnerability

@@ -166,6 +166,35 @@ const isValidEmail = computed(() => {
 - [ ] Input validation
 - [ ] Dependencies updated
 
+## Advanced Vue.js Security Discovery (Discovery Focus)
+
+### 1. Vuex / Pinia State Manipulation
+**Methodology**: Modify state in DevTools to bypass client-side logic.
+*   **Technique**: Open Vue DevTools -> Pinia/Vuex.
+*   **Action**:
+    1.  Locate `user.permissions` or `auth.isAuthenticated`.
+    2.  Mutate value to `['admin']` or `true`.
+    3.  Attempt restricted action.
+    4.  **Zero Tolerance**: If backend relies on this state without verifying the token/session again, flag as **CRITICAL**.
+
+### 2. Component Prop Fuzzing
+**Methodology**: Inject malicious types into component props.
+*   **Audit**: Check `props` definition.
+*   **Fuzz**: If prop expects `String`, pass `Object` or `Array` via parent component.
+*   **Risk**: Logic that assumes string methods (`.split`, `.replace`) will crash (DoS) or behave unexpectedly.
+
+### 3. Server-Side Rendering (Nuxt) Injection
+**Methodology**: SSR hydration mismatch or injection.
+*   **Audit**: Check `useAsyncData` or `fetch` hooks.
+*   **Payload**: `"><img src=x onerror=alert(1)>`.
+*   **Check**: If the payload is rendered in the initial HTML (view-source) unescaped, it's an XSS vector.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: No reactive leakage.
+*   **Check**:
+    1.  Ensure `v-html` is NEVER used with user input, even if "sanitized" (unless strictly audited).
+    2.  Check `watcheffect` or `computed` properties for side effects that log sensitive data.
+
 ## References
 - [Vue.js Security](https://vuejs.org/guide/best-practices/security.html)
 - [OWASP Frontend Security](https://owasp.org/www-project-web-security-testing-guide/)

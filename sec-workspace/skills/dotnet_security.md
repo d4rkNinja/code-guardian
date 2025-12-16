@@ -134,6 +134,42 @@ public class UserModel {
 - `System.Text.Json` < 7.0.3
 - `Microsoft.AspNetCore.Mvc` < 2.2.0
 
+## Advanced .NET Security Discovery (Discovery Focus)
+
+### 1. Deserialization Gadget Detection
+**Methodology**: Identify usage of dangerous serializers.
+*   **Audit**: Grep for usage of types that allow "Type Handling".
+    *   `TypeNameHandling.All` or `Auto` (Newtonsoft)
+    *   `BinaryFormatter` (Obsolete but dangerous)
+    *   `JavaScriptSerializer` (Legacy)
+*   **Trace**: Check if `deserialize(string)` is called with user data.
+*   **Action**: Trace if any class in the classpath has a dangerous destructor (Gadget).
+
+### 2. LINQ Injection Discovery
+**Methodology**: Dynamic LINQ libraries can allow expression injection.
+*   **Audit**: Grep for `injections`.
+*   **Pattern**: usage of `System.Linq.Dynamic`.
+    ```csharp
+    // VULNERABLE
+    var result = db.Users.Where("Id == " + input);
+    ```
+*   **Zero Tolerance**: Any string concatenation inside `Where()` string overloads is **CRITICAL**.
+
+### 3. Mass Assignment / Over-Posting
+**Methodology**: Binding models to Entity Framework entities directly.
+*   **Audit**: Check controller actions taking raw Entities.
+    ```csharp
+    public IActionResult Update([Bind("Id,Name")] User user) { ... }
+    ```
+*   **Check**: Are sensitive fields like `IsAdmin` or `Balance` implicitly bound?
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Prevent leakage of PII in exceptions.
+*   **Check**:
+    1.  Ensure `ASPNETCORE_ENVIRONMENT` is NOT `Development` in prod.
+    2.  Check for `UseDeveloperExceptionPage()` usage in `Startup.cs`.
+    3.  Verify that `appsettings.json` does not contain unencrypted connection strings.
+
 ## References
 - [OWASP .NET Security](https://owasp.org/www-project-dotnet-security/)
 - [ASP.NET Core Security](https://docs.microsoft.com/en-us/aspnet/core/security/)

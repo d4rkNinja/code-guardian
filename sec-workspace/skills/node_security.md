@@ -322,6 +322,47 @@ app.use('/api', limiter);
 - [ ] Unnecessary services disabled
 - [ ] Security headers configured (helmet.js)
 
+## Advanced Security Testing Techniques (Discovery Focus)
+
+### 1. Advanced Prototype Pollution Discovery
+**Methodology**: Move beyond static checking (e.g., `hasOwnProperty`). Actively fuzz for gadget chains.
+*   **Technique**: Use `UOPF` (Undefined-oriented Programming Framework) or manual property injection.
+*   **Fuzzing Payloads**:
+    ```json
+    {"__proto__": {"polluted": true}}
+    {"constructor": {"prototype": {"polluted": true}}}
+    {"__proto__": {"isAdmin": true}}
+    ```
+*   **Verification**: Check if `({}).polluted === true` in the application console or response.
+
+### 2. Taint Analysis for Injection Vectors
+**Methodology**: Trace data from source to sink.
+*   **Tools**: Use `Augur` or instrumented tests to mark inputs as "tainted".
+*   **Deep Sink Analysis**:
+    *   **SQL/NoSQL**: Does `req.body.id` reach `db.query`?
+    *   **Command**: Does `req.query.file` reach `child_process.exec`?
+    *   **Code**: Does `req.params.code` reach `eval` or `new Function`?
+*   **Manual Trace**: Grep for `exec(`, `eval(`, `query(` and backtrace variables to `req` object.
+
+### 3. ReDoS Fuzzing
+**Methodology**: Identify regexes with exponential complexity.
+*   **Discovery**: Extract all regexes from source.
+*   **Analysis**: Test against strings like `aaaaaaaaaaaaaaaaaaaaaaaaaaaa!` (30+ chars).
+*   **Tool**: Use `safe-regex` linter plugin or online ReDoS checkers.
+
+### 4. Supply Chain & Malicious Package Detection
+**Methodology**: Assume `npm audit` misses 0-days.
+*   **Behavioral Analysis**: Check `node_modules` for minified code or encoded strings in unlikely places.
+*   **Network Monitoring**: Does a simple utility package make network requests?
+*   **Lockfile Analysis**: Check `package-lock.json` for registry URLs that are not `registry.npmjs.org`.
+
+### 5. Zero Tolerance Data Compromise Protocol
+**Mandate**: If ANY checking reveals exposure of PII, secrets, or raw internal errors:
+1.  **Stop**: Do not proceed with deployment.
+2.  **Audit**: Identify the exact line logging the object.
+3.  **Remediate**: Apply field-masking (e.g., `winston-masker`) on the logger.
+4.  **Verify**: Re-run the specific compromised test case.
+
 ## Web Search Queries for Node.js Vulnerabilities
 ```
 "[package-name]" npm security vulnerability CVE

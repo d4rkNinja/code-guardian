@@ -170,6 +170,38 @@ let token_data = decode::<Claims>(
 - `hyper` < 0.14.27
 - `rustls` < 0.21.9
 
+## Advanced Rust Security Discovery (Discovery Focus)
+
+### 1. Targeted Unsafe Fuzzing
+**Methodology**: Focus dynamic testing specifically on `unsafe` blocks.
+*   **Technique**: Use `cargo-fuzz` (libFuzzer) or `FourFuzz` logic.
+*   **Action**:
+    1.  Create a fuzz target that wraps the API exposing unsafe behavior.
+    2.  `cargo fuzz run my_target`
+    3.  **Audit**: Manually review all `unsafe` blocks. If `// SAFETY:` comments are missing or weak, flag as **HIGH**.
+
+### 2. FFI Boundary Auditing
+**Methodology**: Verify memory safety at the "Safe-to-Unsafe" boundary.
+*   **Action**:
+    1.  Check `extern "C"` functions.
+    2.  Verify input pointers are not null using `ptr::as_ref()`.
+    3.  Verify strings are valid UTF-8 if converting to `String`.
+    4.  Verify slice lengths from raw parts are correct.
+
+### 3. Dependency Unsafe Count
+**Methodology**: Quantify risk from dependencies.
+*   **Tool**: `cargo-geiger`
+*   **Action**:
+    1.  Run `cargo geiger`.
+    2.  If a dependency has a high count of `unsafe` blocks and is not standard (like `tokio`), flagged for deep review.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Ensure memory corruption does not leak data.
+*   **Check**:
+    1.  Run under `miri` (Undefined Behavior detector) checks if possible.
+    2.  Run address sanitizer (`-Z sanitizer=address`).
+    3.  If any memory leak or use-after-free is detected, flag as **CRITICAL**.
+
 ## References
 - [RustSec Advisory Database](https://rustsec.org/)
 - [Rust Security Guidelines](https://anssi-fr.github.io/rust-guide/)

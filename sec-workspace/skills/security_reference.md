@@ -364,6 +364,34 @@ dependency-check --project myapp --scan bin/
 | Medium | Any | Internal | P3 - 1 month |
 | Low | Any | Any | P4 - Next sprint |
 
+## Advanced Testing Tools & Techniques (Discovery)
+
+### 1. Fuzzing Engines
+*   **Python**: `Atheris` (Coverage-guided, libFuzzer based)
+*   **Java**: `Jazzer` (Coverage-guided, libFuzzer based)
+*   **Rust**: `cargo-fuzz` (libFuzzer), `FourFuzz` (Targeted unsafe)
+*   **Go**: `Go Fuzzing` (Native since 1.18)
+*   **Node.js**: `Jsfuzz` (Coverage-guided)
+
+### 2. Taint Analysis Tools
+*   **Concept**: Tracks data flow from source -> sink.
+*   **Node.js**: `Augur`, `Snyk Code` (DeepCode engine)
+*   **Python**: `PyT` (Python Taint), `Bandit` (Naive taint)
+*   **Java**: `CodeQL` queries, `FindSecBugs`
+*   **General**: `Semgrep` (Advanced ruleset)
+
+### 3. Dynamic Analysis (DAST) Automation
+*   **OWASP ZAP**: Automate via CI/CD (ZAP API).
+*   **Burp Suite Enterprise**: Automated crawling and scanning.
+*   **StackHawk**: DAST for developers (CI integrated).
+
+### 4. Zero Tolerance Protocol Definition
+**"Zero Tolerance"** means immediate build failure if:
+*   **PII Leak**: Any regex match for SSN, Credit Card, or API Key in logs/output.
+*   **Critical Injection**: Any unvalidated path from `request` to `exec`/`eval`/`sql`.
+*   **Unsafe Config**: `DEBUG=True` in production config.
+*   **Action**: These findings bypass "Risk Assessment" and are treated as blocking bugs.
+
 ## Web Search Query Templates
 
 ### CVE Search

@@ -478,6 +478,42 @@ function AuthProvider({ children }) {
 - [ ] CORS properly configured
 - [ ] Error boundaries don't leak info
 
+## Advanced Frontend Discovery (Discovery Focus)
+
+### 1. Component Fuzzing (Props Injection)
+**Methodology**: Inject malicious payloads into component props to test rendering safety.
+*   **Technique**: Use `react-fuzz` or custom tests.
+*   **Payloads**:
+    *   `<img src=x onerror=alert(1)>`
+    *   `javascript:alert(1)`
+    *   `{{constructor.constructor('alert(1)')()}}` (Template injection)
+*   **Action**: Render components with these props and check for execution.
+
+### 2. State Manipulation Testing
+**Methodology**: Can a user modify application state to bypass checks?
+*   **Technique**: Use Redux DevTools or standard JS console.
+*   **Action**:
+    1.  Open Console: `window.store.dispatch({type: 'LOGIN_SUCCESS', payload: {isAdmin: true}})`
+    2.  Modify Context: React DevTools -> Components -> Select Provider -> Edit value.
+    3.  **Zero Tolerance**: If client-side state modification allows admin action without server verification, flag as **CRITICAL**.
+
+### 3. CSP Bypass Testing
+**Methodology**: Verify if Content Security Policy is actually effective.
+*   **Technique**: Attempt to inject inline scripts or load external resources.
+*   **Action**:
+    1.  Inject `<script>alert(1)</script>` via DevTools.
+    2.  Check if it executes (should be blocked).
+    3.  Check Network tab for reports sent to `report-uri`.
+    4.  Verify `script-src` does not contain `unsafe-inline` or wildcards `*`.
+
+### 4. Zero Tolerance Data Compromise Protocol
+**Mandate**: Check browser storage and logs for sensitive data.
+*   **Audit**:
+    1.  `localStorage.getItem('token')` -> **FAIL** if plain JWT.
+    2.  `sessionStorage` -> Check for PII.
+    3.  `document.cookie` -> Check keys sans `HttpOnly`.
+    4.  **Remediate**: Move all auth tokens to `HttpOnly` Set-Cookie headers.
+
 ## Web Search Queries
 ```
 "[package-name]" npm CVE vulnerability
