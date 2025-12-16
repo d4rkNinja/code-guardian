@@ -28,15 +28,6 @@ Comprehensive security vulnerability scanner with Sentinel agent.
 
 ## Usage
 
-### Documentation Plugin
-```bash
-# Generate documentation
-/review
-
-# Review specific directory
-/review --path src/
-```
-
 ### Security Plugin
 ```bash
 # Full security scan
