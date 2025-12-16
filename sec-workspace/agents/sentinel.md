@@ -100,6 +100,87 @@ When a package has vulnerabilities but the vulnerable code is not used:
 └─ Risk Level: LOW (Theoretical) → Would be [ORIGINAL SEVERITY] if used
 ```
 
+```
+
+#### **Report Generation**
+**ALWAYS** generate comprehensive security reports in the `sec-reports/` folder with the following structure:
+
+**Report Structure:**
+```
+sec-reports/
+├── index.md                    # Executive summary and overview
+├── critical-findings.md        # Critical vulnerabilities requiring immediate action
+├── high-priority.md            # High severity issues
+├── medium-priority.md          # Medium severity issues
+├── low-priority.md             # Low severity and informational issues
+├── dependencies/
+│   ├── vulnerable-packages.md  # List of vulnerable dependencies
+│   ├── outdated-packages.md    # Outdated packages analysis
+│   └── [package-name].md       # Detailed analysis per package (if needed)
+├── code-analysis/
+│   ├── injection-vulnerabilities.md
+│   ├── authentication-issues.md
+│   ├── cryptographic-issues.md
+│   └── [category].md           # Per vulnerability category
+├── remediation/
+│   ├── immediate-actions.md    # 0-24 hours
+│   ├── short-term.md           # 1-7 days
+│   ├── medium-term.md          # 1-4 weeks
+│   └── long-term.md            # 1-3 months
+└── metadata.json               # Scan metadata (timestamp, scope, stats)
+```
+
+**File Generation Rules:**
+1. **Always create `sec-reports/` folder** if it doesn't exist
+2. **Generate `index.md` first** with executive summary and links to other reports
+3. **Create separate files** for each severity level (critical, high, medium, low)
+4. **Split by category** if a single file would be too large (>500 lines)
+5. **Use consistent formatting** across all report files
+6. **Include navigation links** between related reports
+7. **Generate metadata.json** with scan statistics and timestamp
+
+**index.md Template:**
+```markdown
+# Security Analysis Report
+**Generated**: [ISO 8601 timestamp]  
+**Project**: [Project name]  
+**Scan Scope**: [Files/Dependencies scanned]
+
+## Executive Summary
+- **Total Vulnerabilities**: [count]
+- **Critical**: [count] | **High**: [count] | **Medium**: [count] | **Low**: [count]
+- **Immediate Action Required**: [YES/NO]
+
+## Quick Navigation
+- [Critical Findings](./critical-findings.md) - 🔴 Immediate attention required
+- [High Priority Issues](./high-priority.md) - 🟠 Address within days
+- [Medium Priority Issues](./medium-priority.md) - 🟡 Address within weeks
+- [Low Priority Issues](./low-priority.md) - 🔵 Address in next sprint
+- [Vulnerable Dependencies](./dependencies/vulnerable-packages.md)
+- [Remediation Roadmap](./remediation/immediate-actions.md)
+
+## Security Posture
+[Overall assessment paragraph]
+
+## Top 5 Critical Issues
+1. [Issue 1 with link to detailed report]
+2. [Issue 2 with link to detailed report]
+...
+```
+
+**Per-Issue File Template:**
+Each vulnerability should include:
+- **Title**: Clear, descriptive vulnerability name
+- **Severity**: With emoji indicator
+- **CVE/CWE**: If applicable
+- **Location**: File path and line numbers
+- **Description**: What the vulnerability is
+- **Impact**: What could happen if exploited
+- **Evidence**: Code snippets showing the issue
+- **Remediation**: Specific fix with code examples
+- **References**: Links to advisories, documentation
+- **Verification**: How to test the fix
+
 #### **Report Structure**
 - **Executive Summary**: High-level overview of security posture
 - **Critical Findings**: Immediate action required
