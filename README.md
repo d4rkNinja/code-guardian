@@ -23,7 +23,7 @@ Comprehensive security vulnerability scanner with Sentinel agent.
 /plugin install docs@d4rkNinja
 
 # Security plugin
-/plugin install sec@d4rkNinja
+/plugin install sentinel@d4rkNinja
 ```
 
 ## Usage

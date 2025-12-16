@@ -2,11 +2,11 @@
   "name": "d4rkNinja",
   "owner": {"name": "d4rkNinja"},
   "plugins": [{
-    "name": "doc-generator",
+    "name": "docbook",
     "source": "./docs-workspace",
     "description": "Technical Documentation Generator"
   }, {
-    "name": "security-scanner",
+    "name": "sentinel",
     "source": "./sec-workspace",
     "description": "Comprehensive Security Scanner"
   }]

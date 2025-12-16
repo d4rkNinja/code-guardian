@@ -1,9 +1,8 @@
 {
-  "name": "docs",
+  "name": "docbook",
   "description": "Reviews code for bugs and improvements",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {"name": "d4rkNinja"},
-  "commands": ["./commands/review.md"],
   "agents":["./agents/docbook.md"],
   "skills":["./skills/SKILL.md"]
 }

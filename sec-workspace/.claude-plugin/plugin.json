@@ -1,7 +1,7 @@
 {
-  "name": "sec",
+  "name": "sentinel",
   "description": "Advanced security vulnerability scanner and remediation advisor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {"name": "d4rkNinja"},
   "agents":["./agents/sentinel.md"],
   "skills":["./skills/SKILL.md"]
