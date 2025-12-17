@@ -1,14 +1,20 @@
 # Code Guardian
 
-Claude Code plugins for documentation generation and security analysis.
+Claude plugins for security analysis, test case generation, and documentation.
 
 ## Plugins
 
-### � docs - Documentation Generator
-Automated technical documentation generation with DocBook agent.
+### 🛡️ sentinel - Security Scanner  
+**Priority: Critical**  
+Comprehensive security vulnerability scanner with deep analysis and intelligent remediation strategies.
 
-### 🛡️ sec - Security Scanner  
-Comprehensive security vulnerability scanner with Sentinel agent.
+### 🧪 testsmith - Test Case Generator  
+**Priority: High**  
+Intelligent test automation that generates high-quality integration and API tests, focusing on critical business logic.
+
+### 📚 docbook - Documentation Generator
+**Priority: Standard**  
+Automated technical documentation generation for comprehensive project understanding.
 
 ## Installation
 
@@ -19,19 +25,22 @@ Comprehensive security vulnerability scanner with Sentinel agent.
 
 ### Install Plugins
 ```bash
-# Documentation plugin
-/plugin install docbook@d4rkNinja
-
-# Security plugin
+# Security plugin (Install First - Critical)
 /plugin install sentinel@d4rkNinja
+
+# Test generation plugin (Install Second - High Priority)
+/plugin install testsmith@d4rkNinja
+
+# Documentation plugin (Install Third - Standard)
+/plugin install docbook@d4rkNinja
 ```
 
 ## Usage
 
-### Using Agents
+### Priority 1: Security Analysis with Sentinel
 
 ```bash
-# Use Sentinel agent for security analysis
+# Comprehensive security scan
 @sentinel "Analyze this codebase for security vulnerabilities"
 
 # Scan specific file for vulnerabilities
@@ -42,8 +51,32 @@ Comprehensive security vulnerability scanner with Sentinel agent.
 
 # Get security recommendations
 @sentinel "What are the critical security issues in this project?"
+```
 
-# Use DocBook agent for documentation
+### Priority 2: Test Case Generation with TestSmith
+
+```bash
+# Generate API tests
+@testsmith "Generate integration tests for the user API endpoints"
+
+# Generate service layer tests
+@testsmith "Create tests for the PaymentService focusing on main workflows"
+
+# Generate workflow tests
+@testsmith "Write tests for the order fulfillment process"
+
+# Generate complete test suite
+@testsmith "Generate comprehensive test suite for this Express application"
+
+# Framework-specific
+@testsmith "Generate Jest tests for my Next.js API routes"
+@testsmith "Create Pytest tests for FastAPI endpoints"
+```
+
+### Priority 3: Documentation with DocBook
+
+```bash
+# Generate technical documentation
 @docbook "Generate technical documentation for this project"
 
 # Document specific component
@@ -52,9 +85,9 @@ Comprehensive security vulnerability scanner with Sentinel agent.
 
 ## Language-Specific Skills
 
-Both agents use **specialized skills** for each technology to provide accurate, context-aware analysis:
+All agents use **specialized skills** for each technology to provide accurate, context-aware analysis. Skills are organized by priority.
 
-### Sentinel Security Skills
+### Priority 1: Sentinel Security Skills
 Each language has dedicated security patterns and vulnerability checks:
 
 - **`node_security.md`** - Node.js/JavaScript (Express, Fastify)
@@ -104,7 +137,54 @@ Each language has dedicated security patterns and vulnerability checks:
   - Insecure storage, API key exposure, deep linking
   - Certificate pinning, jailbreak detection
 
-### DocBook Documentation Skills
+### Priority 2: TestSmith Testing Skills
+Each language has specialized test generation patterns focusing on **integration tests**, **API testing**, and **main function workflows**:
+
+- **`node_testing.md`** - Node.js/JavaScript
+  - **Frameworks**: Jest, Vitest, Mocha + Chai
+  - **API Testing**: Supertest for Express/Fastify/NestJS
+  - **Focus**: API endpoints, service layer, async workflows
+  - **Database**: MongoDB (mongodb-memory-server), PostgreSQL (testcontainers)
+  - **Patterns**: Mock external APIs, test factories, integration over unit tests
+
+- **`python_testing.md`** - Python
+  - **Frameworks**: Pytest (primary), unittest
+  - **API Testing**: FastAPI TestClient, Django test client, Flask test client
+  - **Focus**: REST APIs, service methods, business workflows
+  - **Database**: SQLite in-memory, pytest fixtures
+  - **Patterns**: Parametrized tests, fixtures for setup/teardown, mock external services
+
+- **`java_testing.md`** - Java/Kotlin (Coming Soon)
+  - **Frameworks**: JUnit 5, Mockito, Spring Boot Test
+  - **API Testing**: MockMvc, RestAssured
+  - **Focus**: REST controllers, service layer, Spring beans
+  - **Patterns**: @SpringBootTest, TestContainers, integration slices
+
+- **`dotnet_testing.md`** - .NET/C# (Coming Soon)
+  - **Frameworks**: xUnit, NUnit, MSTest, FluentAssertions
+  - **API Testing**: WebApplicationFactory, HttpClient
+  - **Focus**: API controllers, service layer, EF Core operations
+  - **Patterns**: In-memory databases, mocking with Moq
+
+- **`go_testing.md`** - Go (Coming Soon)
+  - **Frameworks**: testing package, testify
+  - **API Testing**: httptest for handlers
+  - **Focus**: HTTP handlers, service functions, table-driven tests
+  - **Patterns**: Subtests, test fixtures, mock interfaces
+
+- **`php_testing.md`** - PHP (Coming Soon)
+  - **Frameworks**: PHPUnit, Pest (Laravel)
+  - **API Testing**: Laravel HTTP tests, Symfony test client
+  - **Focus**: API routes, service classes, Eloquent operations
+  - **Patterns**: Database factories, feature tests, mocking facades
+
+- **`rust_testing.md`** - Rust (Coming Soon)
+  - **Frameworks**: Built-in test framework, mockall
+  - **API Testing**: Rocket/Actix test utilities
+  - **Focus**: HTTP handlers, business logic, integration tests
+  - **Patterns**: Module tests, integration test directory, cargo test
+
+### Priority 3: DocBook Documentation Skills
 Each language has specialized documentation templates:
 
 - **`node_docbook.md`**, **`python_docbook.md`**, **`php_docbook.md`**, etc.
@@ -113,29 +193,76 @@ Each language has specialized documentation templates:
 
 **To get the most accurate results**, mention the specific technology in your query:
 ```bash
+# Security Analysis
 @sentinel "Analyze this Node.js Express app for security issues"
 @sentinel "Check this Django view for SQL injection"
+
+# Test Generation
+@testsmith "Generate Jest tests for my Express API endpoints"
+@testsmith "Create Pytest integration tests for FastAPI services"
+@testsmith "Write tests for my NestJS payment service"
+
+# Documentation
 @docbook "Generate documentation for this Spring Boot microservice"
 ```
 
 ## Supported Technologies
 
-Both plugins support 14 languages/frameworks:
-- **Backend**: Node.js, Python, PHP, Go, Java, .NET, Rust
+All three plugins (Sentinel, TestSmith, DocBook) support the following 12+ languages/frameworks:
+- **Backend**: Node.js, Python, PHP, Go, Java/Kotlin, .NET/C#, Rust
 - **Frontend**: React, Vue.js, Next.js
 - **Full-Stack**: NestJS
 - **Mobile**: React Native
 
+## Key Features
+
+### 🛡️ Sentinel - Security Analysis
+- **Vulnerability Detection**: OWASP Top 10, CWE patterns, framework-specific exploits
+- **Dependency Scanning**: CVE database integration, version analysis, exploit detection
+- **Context-Aware Risk Assessment**: Real exploitability analysis, attack surface mapping
+- **Intelligent Remediation**: Version upgrades, code fixes, security hardening
+- **Comprehensive Reports**: Generated in `sec-reports/` with severity classification
+
+### 🧪 TestSmith - Test Case Generation
+- **Smart Test Prioritization**: Focus on APIs, services, and main workflows (not utilities)
+- **Integration-First Approach**: Emphasizes integration tests over unit tests
+- **Framework-Specific Patterns**: Jest, Pytest, JUnit, xUnit, Go testing, etc.
+- **Complete Test Suites**: Includes setup, teardown, fixtures, and mocking
+- **Test Documentation**: Generated in `test-reports/` with coverage strategy
+- **Best Testing Practices**: AAA pattern, test isolation, realistic data
+
+### 📚 DocBook - Documentation
+- **Evidence-Based Analysis**: Infers architecture from actual code structure
+- **Multi-Domain Coverage**: Purpose, architecture, implementation, security, operations
+- **Structured Output**: Separate files for each domain in `docs/` directory
+- **Code-Driven Insights**: No generic boilerplate, only verified information
+
 ## Future Work
 
+### Security (Sentinel)
 - [ ] Add more language-specific security patterns
 - [ ] Integrate with CI/CD pipelines
 - [ ] Add custom rule configuration
-- [ ] Support for more frameworks
-- [ ] Enhanced reporting formats
 - [ ] Real-time vulnerability monitoring
+
+### Testing (TestSmith)
+- [ ] Complete testing skills for Java, .NET, Go, PHP, Rust
+- [ ] Add E2E testing patterns (Cypress, Playwright, Selenium)
+- [ ] Generate mutation tests for critical functions
+- [ ] AI-powered test case suggestions based on code changes
+- [ ] Performance and load testing patterns
+
+### Documentation (DocBook)
+- [ ] Support for more frameworks
+- [ ] Enhanced reporting formats (PDF, HTML)
+- [ ] Interactive architecture diagrams
+- [ ] Changelog generation
+
+### General
 - [ ] Team collaboration features
 - [ ] Plugin marketplace submission
+- [ ] VS Code extension integration
+- [ ] Automated PR comments with analysis results
 
 ## License
 

@@ -2,12 +2,16 @@
   "name": "d4rkNinja",
   "owner": {"name": "d4rkNinja"},
   "plugins": [{
-    "name": "docbook",
-    "source": "./docs-workspace",
-    "description": "Technical Documentation Generator"
-  }, {
     "name": "sentinel",
     "source": "./sec-workspace",
     "description": "Comprehensive Security Scanner"
+  }, {
+    "name": "testsmith",
+    "source": "./testcases-workspace",
+    "description": "Intelligent Test Case Generator"
+  }, {
+    "name": "docbook",
+    "source": "./docs-workspace",
+    "description": "Technical Documentation Generator"
   }]
 }

@@ -1,0 +1,8 @@
+{
+  "name": "testsmith",
+  "description": "Intelligent test case generator focusing on integration tests and critical business logic",
+  "version": "1.0.0",
+  "author": {"name": "d4rkNinja"},
+  "agents":["./agents/testsmith.md"],
+  "skills":["./skills/SKILL.md"]
+}
