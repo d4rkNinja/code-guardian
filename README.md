@@ -237,33 +237,6 @@ All three plugins (Sentinel, TestSmith, DocBook) support the following 12+ langu
 - **Structured Output**: Separate files for each domain in `docs/` directory
 - **Code-Driven Insights**: No generic boilerplate, only verified information
 
-## Future Work
-
-### Security (Sentinel)
-- [ ] Add more language-specific security patterns
-- [ ] Integrate with CI/CD pipelines
-- [ ] Add custom rule configuration
-- [ ] Real-time vulnerability monitoring
-
-### Testing (TestSmith)
-- [ ] Complete testing skills for Java, .NET, Go, PHP, Rust
-- [ ] Add E2E testing patterns (Cypress, Playwright, Selenium)
-- [ ] Generate mutation tests for critical functions
-- [ ] AI-powered test case suggestions based on code changes
-- [ ] Performance and load testing patterns
-
-### Documentation (DocBook)
-- [ ] Support for more frameworks
-- [ ] Enhanced reporting formats (PDF, HTML)
-- [ ] Interactive architecture diagrams
-- [ ] Changelog generation
-
-### General
-- [ ] Team collaboration features
-- [ ] Plugin marketplace submission
-- [ ] VS Code extension integration
-- [ ] Automated PR comments with analysis results
-
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
