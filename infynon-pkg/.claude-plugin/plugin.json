@@ -1,0 +1,26 @@
+{
+  "name": "infynon-pkg",
+  "description": "INFYNON Package Security Manager — Universal secure package installation, CVE scanning, auto-fix, dependency auditing, and vulnerability monitoring across 14 ecosystems (npm, yarn, pnpm, bun, pip, uv, poetry, cargo, go, gem, composer, nuget, hex, pub)",
+  "version": "0.2.0",
+  "author": {
+    "name": "d4rkNinja",
+    "email": "d4rkninja@proton.me"
+  },
+  "homepage": "https://github.com/d4rkNinja/code-guardian",
+  "repository": "https://github.com/d4rkNinja/code-guardian",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "package-manager",
+    "cve",
+    "vulnerability",
+    "npm",
+    "pip",
+    "cargo",
+    "uv",
+    "osv",
+    "dependency-audit",
+    "sbom",
+    "supply-chain"
+  ]
+}
