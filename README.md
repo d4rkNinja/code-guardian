@@ -16,15 +16,27 @@ Real-time reverse proxy WAF with TUI dashboard, multi-stage request pipeline (IP
 
 ### Step 1: Install INFYNON CLI
 
-Download from [GitHub Releases](https://github.com/d4rkNinja/infynon-cli/releases) or build from source:
+> **INFYNON CLI**: [github.com/d4rkNinja/infynon-cli](https://github.com/d4rkNinja/infynon-cli)
+
+#### Linux / macOS
 
 ```bash
-git clone https://github.com/d4rkNinja/infynon-cli.git
-cd infynon-cli
-cargo build --release
+curl -fsSL https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.sh | bash
 ```
 
-Binaries available for Windows x64, Linux x64/ARM64 (musl), macOS x64/ARM64.
+#### Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.ps1 | iex
+```
+
+#### Using Cargo
+
+```bash
+cargo install --git https://github.com/d4rkNinja/infynon-cli
+```
+
+Pre-built binaries also available on the [Releases page](https://github.com/d4rkNinja/infynon-cli/releases) for Windows x64, Linux x64/ARM64 (musl), macOS x64/ARM64.
 
 ### Step 2: Install Claude Code Plugins
 
