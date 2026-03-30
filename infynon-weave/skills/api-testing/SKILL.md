@@ -126,40 +126,64 @@ Supports: OpenAPI 3.x (.yaml/.json) and Swagger 2.x, with `$ref` resolution.
 
 ---
 
-## Env Variables in Nodes
+## Env Variables vs Prompt Inputs — Know the Difference
 
-Use `{$ENV_VAR_NAME}` in any field (path, headers, body) to pull from environment:
+This is the most important design decision when modeling an API as a Weave flow.
+
+### Rule of thumb
+
+| Type | Use when | Example |
+|------|----------|---------|
+| **Env var** `{$KEY}` | Static, shared across ALL APIs in the project. Set once, never changes between test runs. | `BASE_URL`, `API_VERSION`, `STAGING_TOKEN`, `X_API_KEY` |
+| **Prompt input** `{var}` | Per-run user data. Changes with every test. The person running the test supplies it. | `email`, `phone_number`, `otp_code`, `password` |
+
+### Never put these in `.infynon/.env`
+- Email addresses, phone numbers — these are test user data, not project config
+- OTP codes, 2FA tokens — these expire; env would always be stale
+- Passwords — if running multiple users, each run has different credentials
+
+### Always use prompt inputs for
+- User identity: `email`, `phone_number`, `country_code`
+- Authentication secrets: `password` (mark `--secret` so input is masked)
+- One-time codes: OTP, 2FA, CAPTCHA, confirmation tokens
+- Any value that a human needs to supply fresh for each test
+
+### Env vars: only for project-wide static config
 
 ```bash
-# In a node's Authorization header:
-Authorization: Bearer {$AUTH_TOKEN}
-
-# In a path:
-/api/{$API_VERSION}/users
-
-# In a body:
-{"api_key": "{$MY_API_KEY}", "user_id": "{user_id}"}
+infynon weave env set BASE_URL http://localhost:8001
+infynon weave env set API_VERSION v1
+infynon weave env set SHARED_API_KEY abc123
 ```
 
-**Resolution order:** `.env` file in `.infynon/.env` → process environment variables.
+These appear as `{$BASE_URL}`, `{$API_VERSION}`, `{$SHARED_API_KEY}` in node fields.
 
-**Manage `.env` with CLI (do NOT hand-edit the file):**
+**The `.infynon/.env` file is managed by the CLI — never hand-edit it:**
 ```bash
-infynon weave env set AUTH_TOKEN eyJhbGci...   # Add or update a variable
-infynon weave env set BASE_URL http://staging.example.com
-infynon weave env list                          # List all variables (sensitive values masked)
-infynon weave env get AUTH_TOKEN                # Show single variable (masked)
-infynon weave env get AUTH_TOKEN --reveal       # Show full value
-infynon weave env delete OLD_TOKEN              # Remove a variable
+infynon weave env set BASE_URL http://staging.example.com   # Add or update
+infynon weave env list                                       # List (sensitive values masked)
+infynon weave env get BASE_URL                              # Show value
+infynon weave env get BASE_URL --reveal                     # Show full value
+infynon weave env delete OLD_KEY                            # Remove
 ```
 
-**`.env` file format** (for reference — always use CLI to edit):
-```env
-AUTH_TOKEN=my-secret-token
-API_KEY=abc123
-BASE_URL=http://localhost:8001
-# Comments are ignored
+**Resolution order:** `.infynon/.env` file → process environment variables.
+
+### Context variables: carry between nodes in a flow
+
+When a value is prompted or extracted in an upstream node, it's in the flow context and automatically available to downstream nodes without re-prompting.
+
 ```
+send-email prompts for {email}
+    ↓ carries email in context
+verify-email uses {email} from context — NOT prompted again
+    ↓ carries email + email_code in context
+register uses {email} from context — NOT prompted again
+```
+
+This means:
+- Prompt for `email` ONCE on the first node that needs it
+- All downstream nodes just use `{email}` — the runtime system fills it from context
 
 ---
 
@@ -211,16 +235,81 @@ Disabled assertions are shown in validation output but silently skipped at runti
 Some endpoints need values only the user can supply at runtime (OTP codes, 2FA tokens, CAPTCHA responses, confirmation codes). Declare these as **prompt inputs** — the node pauses and asks the user before firing.
 
 ```bash
-infynon weave node prompt <node-id> list                              # List all prompt inputs
-infynon weave node prompt <node-id> add <var>                         # Add a prompt input
-infynon weave node prompt <node-id> add otp_code --label "OTP Code"   # With custom label
-infynon weave node prompt <node-id> add password --label "Admin Password" --secret   # Masked input
-infynon weave node prompt <node-id> add session_id --default "test-session"           # With default
-infynon weave node prompt <node-id> remove <index>                    # Remove a prompt input
+infynon weave node prompt <node-id> list                                        # List all prompt inputs
+infynon weave node prompt <node-id> add <var>                                   # Add (uses var name as label)
+infynon weave node prompt <node-id> add <var> --label "Human label"             # Custom display label
+infynon weave node prompt <node-id> add <var> --label "Password" --secret       # Masked input (shows ● ●)
+infynon weave node prompt <node-id> add <var> --default "fallback"              # Default value
+infynon weave node prompt <node-id> add <var> --label "Label" --default "val"   # Label + default
+infynon weave node prompt <node-id> add <var> --type select --options "a,b,c"   # Single-choice list
+infynon weave node prompt <node-id> add <var> --type multiselect --options "a,b,c"  # Multi-choice list
+infynon weave node prompt <node-id> add <var> --type boolean                    # Yes/No toggle
+infynon weave node prompt <node-id> remove <index>                              # Remove a prompt input
 ```
 
-**`--secret`** — masks user input with `*` characters. Use for passwords and tokens.
-**`--default`** — pre-fills a value the user can accept by pressing Enter or override by typing.
+**`--label`** — human-readable prompt shown to the user. If omitted, the variable name is used.
+
+**`--secret`** — masks input with `●` characters. Use for passwords, tokens, API keys.
+
+**`--default`** — pre-fills a value the user can accept by pressing Enter, or override by typing.
+Set defaults on every prompt input so automated tests and CI pipelines work without blocking.
+
+**`--type`** — controls the interaction style shown to the user:
+
+| Type | Description | `--options` needed? |
+|------|-------------|---------------------|
+| `text` | Free-text input (default) | No |
+| `boolean` | Yes / No toggle | No |
+| `select` | Single choice from list | Yes |
+| `multiselect` | Multiple choices from list — value stored as comma-joined string (e.g. "read,write") | Yes |
+
+**`--options`** — comma-separated list of choices for `select` and `multiselect` types (e.g., `"staging,production,dev"`).
+
+**Type examples:**
+```bash
+# text (default — no --type needed)
+infynon weave node prompt login add email --label "Test email"
+
+# boolean
+infynon weave node prompt delete-user add confirm --label "Confirm delete?" --type boolean --default false
+
+# select
+infynon weave node prompt create-order add env --label "Environment" --type select --options "staging,production,dev" --default staging
+
+# multiselect
+infynon weave node prompt create-token add scopes --label "Token scopes" --type multiselect --options "read,write,admin" --default "read,write"
+```
+
+### How defaults enable automated testing
+
+```bash
+# Add a prompt with a default for CI
+infynon weave node prompt api-v1-auth-register add full_name \
+  --label "Full name" \
+  --default "Test Merchant"
+
+infynon weave node prompt api-v1-auth-register add password \
+  --label "Password" \
+  --secret \
+  --default "Test@1234"
+```
+
+In CI/automated mode, infynon uses the `default` value automatically — the run never blocks.
+In interactive mode (human running from terminal or TUI), the default is shown and the user can accept or type something different.
+
+To skip prompts entirely in CI (even if no default is set), use `--set`:
+
+```bash
+# Pre-seed any prompt var with --set — that var will NOT be prompted
+infynon weave flow run my-flow \
+  --set email=ci@example.com \
+  --set full_name="CI Bot" \
+  --set password=Test@1234 \
+  --set country_code=+91 \
+  --set phone_number=9999999999
+```
+
+`--set` takes priority over prompts. Use it in CI scripts to pass all known values up front.
 
 The prompted value is injected as `{var_name}` in the request path, headers, and body — exactly like extracted variables:
 ```
@@ -490,13 +579,13 @@ infynon weave tui <flow-id>     # Open TUI on a specific flow
 | `1` | Overview | All flows list with last run status + quick stats. `Enter`/`a` to run. |
 | `2` | Flow Graph | Box-drawing node visualization with directed edges and sidebar info |
 | `3` | Live Execution | Step-by-step run feed. Select a step with `↑`/`↓`, press `Enter` to see full detail (error, assertions, request/response body, extracted vars) |
-| `4` | Latency Profiler | Bar chart sorted slowest → fastest, p95/avg/max per node |
+| `4` | Latency Profiler | Bar chart sorted slowest → fastest, P50/P95/P99/max per node |
 | `5` | Security Probes | Auth bypass / rate limit / SQLi probe results |
-| `6` | Coverage Map | Per-node coverage gauges (how many times run, pass rate) |
-| `7` | State Inspector | Final context variables + schema drift comparison |
+| `6` | Env / Ctx | Editable view of `.infynon/.env` variables (left) + flow context from last run (right). `n` add, `Enter` edit, `d` delete, `v` reveal secrets. |
+| `7` | State Inspector | Final context variables + schema drift comparison between runs |
 | `8` | Run Diff | Side-by-side comparison of two flow runs |
 | `9` | Node Library | Searchable list of all nodes. `Enter`/`r` to run, `b` to edit body. |
-| `0` | Config | Markdown/PDF output toggles, default base URL editor |
+| `0` | Config | Markdown/PDF report output toggles |
 
 **Global TUI keys:**
 
@@ -507,6 +596,18 @@ infynon weave tui <flow-id>     # Open TUI on a specific flow
 | `R` | Refresh data from disk |
 | `/` | Open search (Node Library) |
 | `?` | Help overlay |
+
+**Live Execution (tab 3) keys:**
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Navigate steps |
+| `Enter` / `Space` | Inspect selected step (error, request, response, assertions, extracted vars) |
+| `r` | Retry — re-run the current flow from the beginning |
+| `b` | Modify body — open the body editor for the selected step's node before retrying |
+| `Esc` | Close step detail |
+| `↑` / `↓` | Scroll inside step detail |
+| `Home` | Scroll to top of step detail |
 
 **Overview (tab 1) keys:**
 
@@ -548,18 +649,54 @@ On save, valid JSON is compacted for storage and pretty-printed when reopened. I
 
 **Prompt Input Modal (shown when a running node has `prompt_inputs`):**
 
-When a flow or node run reaches a node with prompt inputs, execution pauses and this modal appears over tab 3:
+When a flow reaches a node with prompt inputs, execution pauses and a modal appears. Behavior depends on the prompt input type:
+
+**All types — navigation:**
+| Key | Action |
+|-----|--------|
+| `Tab` | Move to next field |
+| `↑` / `↓` (text/boolean) | Move between fields |
+| `Esc` | Cancel — sends empty values, flow stops |
+
+**`text` type:**
+| Key | Action |
+|-----|--------|
+| Any character | Type value |
+| `Backspace` | Delete last character |
+| `Enter` | Advance to next field, or submit on last field |
+
+**`boolean` type:**
+| Key | Action |
+|-----|--------|
+| `y` / `Y` | Set to Yes (true) |
+| `n` / `N` | Set to No (false) |
+| `Space` / `←` / `→` | Toggle between Yes and No |
+| `Enter` | Advance or submit |
+
+**`select` type** (single choice from list):
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Move cursor through options |
+| `Enter` / `Space` | Pick highlighted option and advance |
+
+**`multiselect` type** (multiple choices):
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Move cursor through options |
+| `Space` | Toggle option on/off |
+| `Enter` | Confirm selections and advance |
+
+Secret fields show `●` characters. Fields with defaults show them in dim text — press Enter to accept.
+
+**Env / Ctx (tab 6) keys:**
 
 | Key | Action |
 |-----|--------|
-| Any character | Type value into current field |
-| `Backspace` | Delete last character |
-| `Tab` / `↓` | Move to next field |
-| `↑` | Move to previous field |
-| `Enter` | Advance or submit (on last field) |
-| `Esc` | Cancel — sends empty values |
-
-Secret fields display `*` characters. Fields with defaults show them in dim text.
+| `↑` / `↓` or `j` / `k` | Navigate variables |
+| `n` | Add new variable |
+| `Enter` | Edit selected variable |
+| `d` | Delete selected variable |
+| `v` | Reveal / hide secret values |
 
 **Config (tab 0) keys:**
 
@@ -567,7 +704,6 @@ Secret fields display `*` characters. Fields with defaults show them in dim text
 |-----|--------|
 | `m` | Toggle markdown report output on/off |
 | `p` | Toggle PDF report output on/off |
-| `e` | Edit default base URL |
 
 ---
 
@@ -641,6 +777,9 @@ infynon weave node prompt <node-id> add <var-name>
 infynon weave node prompt <node-id> add <var-name> --label "Human label"
 infynon weave node prompt <node-id> add <var-name> --label "Password" --secret
 infynon weave node prompt <node-id> add <var-name> --default "fallback-value"
+infynon weave node prompt <node-id> add <var-name> --type boolean --default false
+infynon weave node prompt <node-id> add <var-name> --type select --options "staging,production,dev" --default staging
+infynon weave node prompt <node-id> add <var-name> --type multiselect --options "read,write,admin"
 
 # List prompt inputs on a node
 infynon weave node prompt <node-id> list
@@ -681,7 +820,7 @@ infynon weave node clone <id> <new-id>
 infynon weave node export <id> [--format curl|json] [--base-url URL]
 infynon weave node remove <id>
 infynon weave node assertion <id> list|enable|disable|toggle|add|remove
-infynon weave node prompt <id> list|add|remove
+infynon weave node prompt <id> list|add [--label "..."] [--secret] [--default "..."] [--type text|boolean|select|multiselect] [--options "a,b,c"]|remove
 ```
 
 ### flow
