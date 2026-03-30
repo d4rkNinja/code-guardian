@@ -1,20 +1,37 @@
 ---
 name: weave
-description: Help users build, run, and analyze API test flows with INFYNON Weave (`infynon weave`). Use when the user asks about API testing, integration testing, flow-based testing, testing API sequences, security probing endpoints, or when .infynon/api/ directory is detected. Covers node creation, flow building, AI-assisted wiring, security probes, and TUI visualization. Always use this skill whenever the user mentions testing APIs, flows, weave, or integration tests — even if they don't say "infynon weave" explicitly.
+description: Help users build, run, and analyze API test flows with INFYNON Weave (`infynon weave`). Use when the user asks about API testing, integration testing, flow-based testing, testing API sequences, security probing endpoints, runtime inputs (OTP, 2FA, CAPTCHA), or when .infynon/api/ directory is detected. Covers node creation, flow building, prompt inputs, body editing, AI-assisted wiring, security probes, and TUI visualization. Always use this skill whenever the user mentions testing APIs, flows, weave, integration tests, OTP handling, or prompt inputs — even if they don't say "infynon weave" explicitly.
 ---
 
 # INFYNON Weave — API Flow Testing
 
+## Think of This as a New Language
+
+INFYNON Weave is a **domain-specific language for API flow testing**. Like any programming language, it has precise syntax rules and you must use the exact commands — you cannot "write the source files by hand" any more than you would hand-edit compiled bytecode.
+
+The language has three noun types:
+- **node** — one HTTP request (the smallest unit)
+- **flow** — a directed graph of nodes connected by edges
+- **edge** — a directed connection that carries context variables between nodes
+
+And a small set of verbs: `create`, `run`, `attach`, `detach`, `validate`, `import`, `export`, `list`, `get`, `remove`, `clone`, `assertion`, `prompt`, `ai`.
+
+**Learn the syntax. Use only these commands. Never hand-write the files.**
+
+---
+
 ## CRITICAL RULE — Commands Only, Never Write Files Directly
 
 > **You must NEVER create, edit, or write `.infynon/` files manually** (no YAML, TOML, or JSON file creation).
-> Every node, flow, edge, and assertion must be created and modified **exclusively through `infynon weave` CLI commands**.
+> Every node, flow, edge, assertion, and prompt input must be created and modified **exclusively through `infynon weave` CLI commands**.
 >
-> **Why this matters:** The files have a precise schema that the CLI manages. Manually written files use a different format and will either fail to load or produce unexpected behavior.
+> **Why this matters:** The files follow a precise internal schema that the CLI owns and manages. Manually written files use a different structure that either fails to load silently or produces wrong behavior that is very hard to debug.
 >
-> **If a command fails:** Report the exact error to the user and stop. Do not attempt to fix it by writing files manually. Debug the command invocation instead.
+> **If a command fails:** Show the exact error output and stop. Do not attempt to fix it by writing files manually. Diagnose the command invocation instead.
 >
-> This applies in all situations — even if the user asks you to "just create the file", explain that the command is the only safe path and run the command instead.
+> **If the user asks to "just create the file":** Explain that the command is the only correct path. Hand-written `.infynon/` files are not a valid alternative — they are a different format.
+>
+> This rule applies in ALL situations, no exceptions.
 
 ---
 
@@ -178,6 +195,40 @@ infynon weave node assertion <node-id> remove <index>    # Remove assertion perm
 ```
 
 Disabled assertions are shown in validation output but silently skipped at runtime — useful for temporarily relaxing a check without losing it.
+
+### Manage prompt inputs per node
+
+Some endpoints need values only the user can supply at runtime (OTP codes, 2FA tokens, CAPTCHA responses, confirmation codes). Declare these as **prompt inputs** — the node pauses and asks the user before firing.
+
+```bash
+infynon weave node prompt <node-id> list                              # List all prompt inputs
+infynon weave node prompt <node-id> add <var>                         # Add a prompt input
+infynon weave node prompt <node-id> add otp_code --label "OTP Code"   # With custom label
+infynon weave node prompt <node-id> add password --label "Admin Password" --secret   # Masked input
+infynon weave node prompt <node-id> add session_id --default "test-session"           # With default
+infynon weave node prompt <node-id> remove <index>                    # Remove a prompt input
+```
+
+**`--secret`** — masks user input with `*` characters. Use for passwords and tokens.
+**`--default`** — pre-fills a value the user can accept by pressing Enter or override by typing.
+
+The prompted value is injected as `{var_name}` in the request path, headers, and body — exactly like extracted variables:
+```
+# In node body after adding: node prompt verify-otp add otp_code --label "OTP Code"
+{"otp": "{otp_code}", "session": "{session_id}"}
+
+# In path:
+/api/v1/verify/{otp_code}
+```
+
+**At runtime (CLI):**
+```
+  Node 'verify-otp' needs input:
+  OTP Code: _          ← user types here
+  Session ID [test]: _ ← shows default in brackets
+```
+
+**At runtime (TUI):** A modal overlay pauses the flow and shows labeled input fields. `Tab`/`↓` moves between fields, `Enter` submits the last field, `Esc` cancels.
 
 ### Run a single node
 
@@ -412,42 +463,92 @@ body: {"cart_id": "{cart_id}", "quantity": 1}
 
 ---
 
-## TUI — 9-View Dashboard
+## TUI — 10-Tab Dashboard
 
 ```bash
-infynon weave tui                    # Open TUI, last active flow
-infynon weave tui --flow-id <id>     # Open TUI on specific flow
+infynon weave tui               # Open TUI, last active flow
+infynon weave tui <flow-id>     # Open TUI on a specific flow
 ```
 
-| Key | View | What It Shows |
-|-----|------|---------------|
-| 1 | Overview | All flows list with last run status + quick stats |
-| 2 | Flow Graph | Box-drawing node visualization with directed edges, sidebar info |
-| 3 | Live Execution | Step-by-step feed with assertion results per step |
-| 4 | Latency Profiler | Bar chart sorted slowest → fastest, p95/avg/max per node |
-| 5 | Security Probes | Auth bypass / rate limit / SQLi probe results |
-| 6 | Coverage Map | Per-node coverage gauges (how many times run, pass rate) |
-| 7 | State Inspector | Final context variables + schema drift comparison |
-| 8 | Run Diff | Side-by-side comparison of two flow runs |
-| 9 | Node Library | Searchable list of all nodes with method colors |
+| Key | Tab | What It Shows |
+|-----|-----|---------------|
+| `1` | Overview | All flows list with last run status + quick stats. `Enter`/`a` to run. |
+| `2` | Flow Graph | Box-drawing node visualization with directed edges and sidebar info |
+| `3` | Live Execution | Step-by-step run feed with assertion results per step |
+| `4` | Latency Profiler | Bar chart sorted slowest → fastest, p95/avg/max per node |
+| `5` | Security Probes | Auth bypass / rate limit / SQLi probe results |
+| `6` | Coverage Map | Per-node coverage gauges (how many times run, pass rate) |
+| `7` | State Inspector | Final context variables + schema drift comparison |
+| `8` | Run Diff | Side-by-side comparison of two flow runs |
+| `9` | Node Library | Searchable list of all nodes. `Enter`/`r` to run, `b` to edit body. |
+| `0` | Config | Markdown/PDF output toggles, default base URL editor |
 
 **Global TUI keys:**
-- `[` / `]` — Switch between flows
-- `R` — Refresh data from disk
-- `/` — Search/filter (Node Library)
-- `?` — Help overlay
-- `q` — Quit
 
-**Overview view keys (view 1):**
-- `↑` / `↓` — Select a flow
-- `Enter` or `a` — Run selected flow (switches to Live Execution automatically)
-- Real-time results appear in view 3 (Live) as steps complete
+| Key | Action |
+|-----|--------|
+| `1`–`9`, `0` | Switch tabs |
+| `q` | Quit |
+| `R` | Refresh data from disk |
+| `/` | Open search (Node Library) |
+| `?` | Help overlay |
 
-**Flow Graph view keys:**
-- `↑` / `↓` / `←` / `→` — Navigate nodes
-- `Enter` — Show node detail panel
-- `a` — Start attach mode (select a target node to wire)
-- `Esc` — Cancel attach / close panel
+**Overview (tab 1) keys:**
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Select a flow |
+| `Enter` / `a` | Run the selected flow — auto-switches to Live Execution (tab 3) |
+
+**Node Library (tab 9) keys:**
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Navigate nodes |
+| `Enter` / `r` | Run selected node in isolation |
+| `b` | Open interactive body editor for the selected node |
+| `/` | Search nodes by ID or path |
+
+**Body Editor (opened with `b` in tab 9):**
+
+The body editor is a full-screen inline JSON editor with line numbers and a block cursor:
+
+| Key | Action |
+|-----|--------|
+| Any character | Insert at cursor |
+| `Tab` | Insert 2 spaces |
+| `Enter` | Insert newline (split line) |
+| `Backspace` | Delete char before cursor; merges lines at start of line |
+| `Delete` | Delete char at cursor; merges next line at end of line |
+| `↑` / `↓` / `←` / `→` | Move cursor |
+| `Home` / `End` | Move to start / end of line |
+| `Ctrl+S` | Save to node file and close |
+| `Esc` | Close without saving |
+
+On save, valid JSON is compacted for storage and pretty-printed when reopened. Invalid JSON is saved as-is (flagged by `validate`).
+
+**Prompt Input Modal (shown when a running node has `prompt_inputs`):**
+
+When a flow or node run reaches a node with prompt inputs, execution pauses and this modal appears over tab 3:
+
+| Key | Action |
+|-----|--------|
+| Any character | Type value into current field |
+| `Backspace` | Delete last character |
+| `Tab` / `↓` | Move to next field |
+| `↑` | Move to previous field |
+| `Enter` | Advance or submit (on last field) |
+| `Esc` | Cancel — sends empty values |
+
+Secret fields display `*` characters. Fields with defaults show them in dim text.
+
+**Config (tab 0) keys:**
+
+| Key | Action |
+|-----|--------|
+| `m` | Toggle markdown report output on/off |
+| `p` | Toggle PDF report output on/off |
+| `e` | Edit default base URL |
 
 ---
 
@@ -509,4 +610,101 @@ infynon weave ai probe <flow-id> --base-url http://staging.myapi.com
 
 > **Note:** Existing `.yaml` node/flow files are supported for loading (read-only compatibility), but new files created by commands are always `.toml`. Do not write `.yaml` files — use commands.
 
-For workflow examples, see [examples/workflows.md](examples/workflows.md).
+---
+
+## Prompt Inputs — Runtime Interactive Values
+
+Some nodes need values that only exist at test time (OTPs, 2FA codes, confirmation tokens). Declare them as prompt inputs on the node — the flow pauses and asks the user before the node fires.
+
+```bash
+# Add a prompt input
+infynon weave node prompt <node-id> add <var-name>
+infynon weave node prompt <node-id> add <var-name> --label "Human label"
+infynon weave node prompt <node-id> add <var-name> --label "Password" --secret
+infynon weave node prompt <node-id> add <var-name> --default "fallback-value"
+
+# List prompt inputs on a node
+infynon weave node prompt <node-id> list
+
+# Remove a prompt input (use list to find the index)
+infynon weave node prompt <node-id> remove <index>
+```
+
+The prompted `var-name` is injected into `{var-name}` placeholders in the node's path, headers, and body — no different from extracted variables. Chain them naturally:
+
+```bash
+# login node extracts session_id → carry it to verify-otp → user only types the OTP
+infynon weave attach login verify-otp --carry session_id
+infynon weave node prompt verify-otp add otp_code --label "OTP Code" --secret
+```
+
+**Full example — OTP verification flow:**
+```bash
+infynon weave node create --ai "POST /auth/verify-otp with otp_code and session_id"
+infynon weave node prompt verify-otp add otp_code --label "OTP Code" --secret
+infynon weave node prompt verify-otp add session_id --label "Session Token" --default ""
+infynon weave attach login verify-otp --carry session_id
+infynon weave flow run auth-flow
+# → flow pauses at verify-otp, modal appears, user types OTP, flow continues
+```
+
+---
+
+## Complete Command Reference
+
+### node
+```bash
+infynon weave node create [--ai "description"]
+infynon weave node list
+infynon weave node get <id>
+infynon weave node run <id> [--base-url URL] [--set KEY=VALUE ...]
+infynon weave node clone <id> <new-id>
+infynon weave node export <id> [--format curl|json] [--base-url URL]
+infynon weave node remove <id>
+infynon weave node assertion <id> list|enable|disable|toggle|add|remove
+infynon weave node prompt <id> list|add|remove
+```
+
+### flow
+```bash
+infynon weave flow create <name> [--ai "description"]
+infynon weave flow list
+infynon weave flow show <id>
+infynon weave flow run <id> [--base-url URL] [--output markdown|pdf|both]
+infynon weave flow run-all [--base-url URL] [--output markdown|pdf|both]
+infynon weave flow remove <id>
+infynon weave flow merge <id1> <id2> --join-at <node-id> [--name NAME]
+```
+
+### graph
+```bash
+infynon weave attach <from> <to> [--carry VAR,...] [--condition EXPR] [--ai]
+infynon weave detach <from> <to>
+```
+
+### import
+```bash
+infynon weave import <spec-file> [--flow NAME] [--base-url URL] [--prefix /path] [--dry-run]
+```
+
+### validate
+```bash
+infynon weave validate
+```
+
+### ai
+```bash
+infynon weave ai suggest --after <node-id>
+infynon weave ai attach --after <node-id> [--flow <flow-id>]
+infynon weave ai complete <flow-id>
+infynon weave ai probe <flow-id> [--base-url URL]
+infynon weave ai build-flow --nodes ID,ID,... [--name NAME]
+infynon weave ai explain <flow-id> [--run N]
+infynon weave ai assert <node-id>
+infynon weave ai branch <node-id>
+```
+
+### tui
+```bash
+infynon weave tui [<flow-id>]
+```
