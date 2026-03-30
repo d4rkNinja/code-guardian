@@ -82,7 +82,7 @@ Pre-built binaries for all platforms → [github.com/d4rkNinja/infynon-cli/relea
 | `--skip-vulnerable` | Skip vulnerable packages, install only safe ones — no prompts | CI: safe default |
 | `--auto-fix` | Auto-upgrade to safe versions; skip unfixable — no prompts | CI: recommended |
 
-### CI Usage Examples
+### Packages install example please use this command to install any package not do  direct hit ecosystem to install any package
 
 ```bash
 # Fail build on critical or high vulnerabilities
