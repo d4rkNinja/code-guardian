@@ -51,6 +51,30 @@ cargo install --git https://github.com/d4rkNinja/infynon-cli        # From sourc
 
 ---
 
+## Validate — Check Nodes and Flows
+
+Run before testing to catch missing references, bad paths, broken flows:
+
+```bash
+infynon weave validate
+```
+
+**Checks performed:**
+- Every node: method is valid, path starts with `/`, body is valid JSON, extractions formatted correctly
+- Every flow: entry node exists in library, every edge node exists, no circular dependencies
+- Returns exit code 1 if any **errors** found (warnings don't fail)
+
+**Output:**
+```
+✔  api-v1-onboarding-branches    valid
+⚠  my-incomplete-node            WARNING: no assertions defined
+✘  broken-flow                   ERROR: entry node 'missing-node' not found
+
+Summary: 7 nodes (6 valid, 1 warning) | 1 flow (0 valid, 1 error)
+```
+
+---
+
 ## OpenAPI / Swagger Import
 
 Import an entire API spec in one command — generates nodes, extractions, assertions, and optionally a wired flow.
@@ -136,8 +160,24 @@ infynon weave node list                        # List all nodes with method + pa
 infynon weave node get <id>                    # Show full node details
 infynon weave node remove <id>                 # Delete a node
 infynon weave node clone <id>                  # Duplicate a node (new id)
-infynon weave node export <id>                 # Print node as JSON
+infynon weave node export <id>                 # Print node as curl or JSON
 ```
+
+### Manage assertions per node
+
+Each node has assertions that run after execution. Toggle them on/off without deleting.
+
+```bash
+infynon weave node assertion <node-id> list              # Show all assertions with index + status
+infynon weave node assertion <node-id> enable <index>    # Enable assertion at index
+infynon weave node assertion <node-id> disable <index>   # Disable assertion (skipped at runtime)
+infynon weave node assertion <node-id> toggle <index>    # Flip enabled/disabled
+infynon weave node assertion <node-id> add "status == 201"  # Add new assertion
+infynon weave node assertion <node-id> add "body.id exists" --on-fail warn
+infynon weave node assertion <node-id> remove <index>    # Remove assertion permanently
+```
+
+Disabled assertions are shown in validation output but silently skipped at runtime — useful for temporarily relaxing a check without losing it.
 
 ### Run a single node
 
@@ -179,6 +219,9 @@ infynon weave flow merge <id1> <id2>           # Merge two flows into one
 ```bash
 infynon weave flow run <id>                                   # Run with live step-by-step output
 infynon weave flow run <id> --base-url http://localhost:3000  # Override base URL
+infynon weave flow run <id> --output markdown                 # Save report to ./reports/
+infynon weave flow run <id> --output pdf                      # Save PDF report
+infynon weave flow run <id> --output both                     # Save both formats
 ```
 
 **Live output format:**
