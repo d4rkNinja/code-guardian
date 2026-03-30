@@ -1,9 +1,22 @@
 ---
 name: weave
-description: Help users build, run, and analyze API test flows with INFYNON Weave (`infynon weave`). Use when the user asks about API testing, integration testing, flow-based testing, testing API sequences, security probing endpoints, or when .infynon/api/ directory is detected. Covers node creation, flow building, AI-assisted wiring, security probes, and TUI visualization.
+description: Help users build, run, and analyze API test flows with INFYNON Weave (`infynon weave`). Use when the user asks about API testing, integration testing, flow-based testing, testing API sequences, security probing endpoints, or when .infynon/api/ directory is detected. Covers node creation, flow building, AI-assisted wiring, security probes, and TUI visualization. Always use this skill whenever the user mentions testing APIs, flows, weave, or integration tests — even if they don't say "infynon weave" explicitly.
 ---
 
 # INFYNON Weave — API Flow Testing
+
+## CRITICAL RULE — Commands Only, Never Write Files Directly
+
+> **You must NEVER create, edit, or write `.infynon/` files manually** (no YAML, TOML, or JSON file creation).
+> Every node, flow, edge, and assertion must be created and modified **exclusively through `infynon weave` CLI commands**.
+>
+> **Why this matters:** The files have a precise schema that the CLI manages. Manually written files use a different format and will either fail to load or produce unexpected behavior.
+>
+> **If a command fails:** Report the exact error to the user and stop. Do not attempt to fix it by writing files manually. Debug the command invocation instead.
+>
+> This applies in all situations — even if the user asks you to "just create the file", explain that the command is the only safe path and run the command instead.
+
+---
 
 You are helping the user work with **INFYNON** (`infynon weave`) — an AI-driven, node-based API flow testing system built into the INFYNON CLI.
 
@@ -377,13 +390,14 @@ infynon weave ai probe <flow-id> --base-url http://staging.myapi.com
 .infynon/
 └── api/
     ├── nodes/
-    │   ├── login.toml           # Node definitions
-    │   ├── create-cart.toml
-    │   └── checkout.toml
+    │   ├── login.toml           # Created by: infynon weave node create
+    │   └── checkout.toml        # ⚠ Never write these by hand — use commands
     ├── flows/
-    │   └── checkout-flow.toml   # Flow definitions (entry + edges)
+    │   └── checkout-flow.toml   # Created by: infynon weave flow create
     └── runs/
-        └── checkout-flow__1234567890.json   # Run history (JSON)
+        └── checkout-flow__1234567890.json   # Written automatically by flow run
 ```
+
+> **Note:** Existing `.yaml` node/flow files are supported for loading (read-only compatibility), but new files created by commands are always `.toml`. Do not write `.yaml` files — use commands.
 
 For workflow examples, see [examples/workflows.md](examples/workflows.md).
