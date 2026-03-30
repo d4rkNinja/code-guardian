@@ -1,0 +1,23 @@
+{
+  "name": "infynon-api",
+  "description": "INFYNON API Testing Suite — AI-driven node-based API flow testing with TUI visualization, security probes, assertion engine, variable threading, and automated flow building. Test entire API modules as directed graphs, not just single endpoints.",
+  "version": "0.1.0",
+  "author": {
+    "name": "d4rkNinja",
+    "email": "d4rkninja@proton.me"
+  },
+  "homepage": "https://github.com/d4rkNinja/code-guardian",
+  "repository": "https://github.com/d4rkNinja/code-guardian",
+  "license": "MIT",
+  "keywords": [
+    "api-testing",
+    "flow-testing",
+    "tui",
+    "security-probes",
+    "ai",
+    "assertion",
+    "http",
+    "rest",
+    "integration-testing"
+  ]
+}

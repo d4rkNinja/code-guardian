@@ -5,8 +5,8 @@
     "email": "d4rkninja@proton.me"
   },
   "metadata": {
-    "description": "INFYNON Security Suite — Package security manager and network firewall plugins for Claude Code",
-    "version": "2.0.0"
+    "description": "INFYNON Security Suite — Package security manager, network firewall, and API testing plugins for Claude Code",
+    "version": "2.1.0"
   },
   "plugins": [
     {
@@ -26,6 +26,15 @@
       "category": "security",
       "tags": ["firewall", "waf", "reverse-proxy", "security", "tui", "rate-limiter"],
       "keywords": ["firewall", "waf", "network-security", "rate-limiter", "ddos"]
+    },
+    {
+      "name": "infynon-api",
+      "source": "./infynon-api",
+      "description": "INFYNON API Testing Suite — AI-driven node-based API flow testing, security probes, TUI visualization, assertion engine, and automated flow building",
+      "version": "0.1.0",
+      "category": "testing",
+      "tags": ["api-testing", "flow-testing", "security-probes", "tui", "ai", "integration-testing"],
+      "keywords": ["api-testing", "flow-testing", "http", "rest", "assertions", "security-probes"]
     }
   ]
 }
