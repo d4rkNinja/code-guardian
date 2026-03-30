@@ -27,6 +27,34 @@ Internet → INFYNON Proxy → [IP Filter → Rate Limiter → WAF → Custom Ru
 3. **WAF** — Compiled RegexSet patterns: SQLi (13), XSS (12), path traversal (10), command injection (4), header injection (3). Plus URL length, body size, method, extension, User-Agent enforcement
 4. **Custom Rules** — Priority-sorted rules with conditions (IP, path, method, header, body, content-type, size) and actions (Block, Allow, Flag, RateLimit)
 
+---
+
+## First: Check if INFYNON Is Installed
+
+```bash
+infynon --version
+```
+
+**If not found, install it:**
+
+```bash
+# Recommended (all platforms — no Rust required)
+npm install -g infynon
+
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.sh | bash
+
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.ps1 | iex
+
+# Build from source (requires Rust)
+cargo install --git https://github.com/d4rkNinja/infynon-cli
+```
+
+Pre-built binaries for all platforms → [github.com/d4rkNinja/infynon-cli/releases](https://github.com/d4rkNinja/infynon-cli/releases)
+
+---
+
 ## Core Commands
 
 | Command | Purpose |
@@ -72,6 +100,8 @@ Internet → INFYNON Proxy → [IP Filter → Rate Limiter → WAF → Custom Ru
 | `--since <DURATION>` | Time window (1h, 24h, 7d) |
 | `--count <N>` | Number of entries (default: 50) |
 
+---
+
 ## TUI Keyboard Shortcuts
 
 | Key | Action |
@@ -88,6 +118,8 @@ Internet → INFYNON Proxy → [IP Filter → Rate Limiter → WAF → Custom Ru
 | u | Unblock IP (IP Inspector) |
 | Enter | Edit field (Config view) |
 | s | Save config to file (Config view) |
+
+---
 
 ## Configuration (infynon.toml)
 
@@ -131,7 +163,7 @@ name = "block-scanners"
 priority = 1
 action = "Block"
 conditions = [
-  { type = "UserAgent", pattern = ".*sqlmap.*" }
+  { type = "UserAgent", pattern = ".*(sqlmap|nikto|nmap).*" }
 ]
 
 # Email alerts
@@ -141,19 +173,25 @@ smtp_host = "smtp.gmail.com"
 smtp_port = 587
 ```
 
+---
+
 ## How You Help
 
-1. **Setup** — Guide through `infynon init`, explain config options, recommend settings for their use case
-2. **Configuration** — Help write custom rules, configure rate limits, set up multi-upstream routing
-3. **Operations** — Explain TUI views, help with IP blocking, log analysis, maintenance mode
-4. **Troubleshooting** — Debug config issues, explain WAF false positives, tune rate limits
-5. **Monitoring** — Set up email alerts, interpret stats, identify attack patterns
+1. **Check installation first** — run `infynon --version`; if not found, guide through install
+2. **Setup** — Guide through `infynon init`, explain config options, recommend settings for their use case
+3. **Configuration** — Help write custom rules, configure rate limits, set up multi-upstream routing
+4. **Operations** — Explain TUI views, help with IP blocking, log analysis, maintenance mode
+5. **Troubleshooting** — Debug config issues, explain WAF false positives, tune rate limits
+6. **Monitoring** — Set up email alerts, interpret stats, identify attack patterns
+
+---
 
 ## Important Notes
 
-- Config file: `./infynon.toml` or `~/.infynon/infynon.toml`
+- Always verify installation with `infynon --version` before recommending commands
+- Config file locations: `./infynon.toml` (local) or `~/.infynon/infynon.toml` (global)
 - Hot reload: config changes are picked up every 2 seconds without restart
-- TUI can edit all 20+ config fields live (view 7)
+- TUI can edit all 20+ config fields live (view 7, key `s` to save)
 - Maintenance mode returns 503 to all requests (toggle with `m` key)
 - Logs are written as JSONL to `access.jsonl` and `blocked.jsonl`
 - Cross-platform: works on Windows, macOS, and Linux

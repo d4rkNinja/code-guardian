@@ -4,10 +4,10 @@ Claude Code plugins for the **INFYNON** security suite — a Rust-based dual-mod
 
 ## Plugins
 
-### 🛡️ infynon-pkg — Package Security Manager
+### 🔐 infynon-pkg — Package Security Manager
 Universal secure package installation, CVE scanning, auto-fix, dependency auditing, and vulnerability monitoring across **14 ecosystems** (npm, yarn, pnpm, bun, pip, uv, poetry, cargo, go, gem, composer, nuget, hex, pub).
 
-### 🔥 infynon-firewall — Network Firewall
+### 🛡️ infynon-firewall — Network Firewall
 Real-time reverse proxy WAF with TUI dashboard, multi-stage request pipeline (IP filter → rate limiter → WAF → custom rules), multi-upstream routing, hot config reload, maintenance mode, and email alerts.
 
 ---
@@ -17,6 +17,17 @@ Real-time reverse proxy WAF with TUI dashboard, multi-stage request pipeline (IP
 ### Step 1: Install INFYNON CLI
 
 > **INFYNON CLI**: [github.com/d4rkNinja/infynon-cli](https://github.com/d4rkNinja/infynon-cli)
+
+**Check if already installed:**
+```bash
+infynon --version
+```
+
+#### npm (Recommended — all platforms, no Rust required)
+
+```bash
+npm install -g infynon
+```
 
 #### Linux / macOS
 
@@ -30,13 +41,19 @@ curl -fsSL https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/
 irm https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.ps1 | iex
 ```
 
-#### Using Cargo
+#### Build from Source (requires Rust)
 
 ```bash
 cargo install --git https://github.com/d4rkNinja/infynon-cli
 ```
 
 Pre-built binaries also available on the [Releases page](https://github.com/d4rkNinja/infynon-cli/releases) for Windows x64, Linux x64/ARM64 (musl), macOS x64/ARM64.
+
+**Verify:**
+```bash
+infynon --version
+infynon pkg --help
+```
 
 ### Step 2: Install Claude Code Plugins
 
@@ -63,11 +80,13 @@ claude --plugin-dir ./infynon-pkg --plugin-dir ./infynon-firewall
 
 These are **contextual skills** — once installed, Claude Code automatically knows how to help users with INFYNON. Claude will:
 
+- Check if INFYNON is installed and guide through installation if not found
 - Recommend the right `infynon` commands based on what the user is trying to do
 - Detect lock files and suggest security scans
 - Help write firewall configurations (`infynon.toml`)
 - Guide users through TUI keyboard shortcuts
 - Explain vulnerability scan results and fix options
+- Recommend CI-friendly flags (`--strict`, `--auto-fix`, `--skip-vulnerable`)
 
 ### Skills
 
@@ -80,7 +99,7 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 
 | Plugin | Agent | Purpose |
 |--------|-------|---------|
-| infynon-pkg | `pkg-guardian` | Deep package security analysis, CVE triage, migration guidance |
+| infynon-pkg | `pkg-guardian` | Deep package security analysis, CVE triage, migration guidance, CI setup |
 | infynon-firewall | `fw-guardian` | Firewall setup, rule authoring, attack investigation, config tuning |
 
 ---
@@ -99,8 +118,11 @@ infynon pkg npm install express
 infynon pkg uv add fastapi
 infynon pkg cargo add serde
 
-# Block critical CVEs
-infynon pkg --strict=critical npm install lodash
+# CI / non-interactive flags (no prompts)
+infynon pkg npm install express --strict high      # fail build on critical/high
+infynon pkg npm install express --auto-fix         # auto-upgrade to safe versions
+infynon pkg npm install express --skip-vulnerable  # skip bad packages silently
+infynon pkg npm install express --yes              # install everything (audit-only CI)
 
 # Auto-fix all vulnerabilities
 infynon pkg fix --auto
@@ -133,6 +155,15 @@ infynon pkg migrate pip uv
 infynon pkg eagle-eye setup
 infynon pkg eagle-eye start
 ```
+
+### CI Flag Reference
+
+| Flag | Behavior | Exit Code |
+|------|----------|-----------|
+| `--strict [LEVEL]` | Fail if vulnerabilities at/above level are found | `1` on block |
+| `--auto-fix` | Upgrade to safe versions silently; skip if no fix | `0` |
+| `--skip-vulnerable` | Skip vulnerable packages, install clean ones | `0` |
+| `--yes` | Install all packages including vulnerable ones | `0` |
 
 ### Supported Ecosystems
 
@@ -193,6 +224,40 @@ Internet → INFYNON :8080 → [IP Filter → Rate Limiter → WAF → Custom Ru
 
 ---
 
+## Troubleshooting
+
+### INFYNON CLI Not Found
+```bash
+# Check installation
+infynon --version
+
+# Install via npm (recommended)
+npm install -g infynon
+
+# Or via script
+curl -fsSL https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.sh | bash
+
+# Windows
+irm https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.ps1 | iex
+
+# Verify
+infynon --version
+```
+
+### Plugin Not Loading
+```bash
+/plugin                    # Check Errors tab
+/reload-plugins            # Reload all plugins
+```
+
+### Skills Not Appearing
+```bash
+rm -rf ~/.claude/plugins/cache     # Clear cache
+# Restart Claude Code, reinstall
+```
+
+---
+
 ## Plugin References
 
 - [Claude Code Plugins](https://code.claude.com/docs/en/plugins)
@@ -222,26 +287,6 @@ code-guardian/
 │       ├── SKILL.md                # Config guide + command reference
 │       └── examples/scenarios.md   # Protection, multi-upstream, attack investigation
 └── README.md
-```
-
-## Troubleshooting
-
-### Plugin Not Loading
-```bash
-/plugin                    # Check Errors tab
-/reload-plugins            # Reload all plugins
-```
-
-### Skills Not Appearing
-```bash
-rm -rf ~/.claude/plugins/cache     # Clear cache
-# Restart Claude Code, reinstall
-```
-
-### INFYNON CLI Not Found
-```bash
-infynon --version          # Verify installation
-# If missing: cargo install infynon
 ```
 
 ---

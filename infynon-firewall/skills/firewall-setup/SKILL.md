@@ -16,13 +16,34 @@ You are helping the user work with **INFYNON** (`infynon`) — a Rust-based real
 - User wants to monitor HTTP traffic in real-time
 - You detect an `infynon.toml` in the project
 
-## Prerequisites
+---
 
-The user needs `infynon` installed:
+## Prerequisites — Install INFYNON
+
+**First, check if it's already installed:**
 ```bash
-cargo install infynon
-# Or download from: https://github.com/d4rkNinja/infynon-cli/releases
+infynon --version
 ```
+
+**If not found, install it:**
+
+```bash
+# Recommended (all platforms — no Rust required)
+npm install -g infynon
+
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.sh | bash
+
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/d4rkNinja/infynon-cli/main/scripts/install.ps1 | iex
+
+# Build from source (requires Rust)
+cargo install --git https://github.com/d4rkNinja/infynon-cli
+```
+
+Pre-built binaries for all platforms → [github.com/d4rkNinja/infynon-cli/releases](https://github.com/d4rkNinja/infynon-cli/releases)
+
+---
 
 ## Command Reference — What to Recommend Based on User Intent
 
@@ -52,7 +73,7 @@ infynon monitor                            # Open TUI dashboard
 infynon logs                               # View recent logs
 infynon logs --follow                      # Stream live
 infynon logs --verdict block --since 1h    # Recent blocks
-infynon logs --ip 10.0.0.1               # Filter by IP
+infynon logs --ip 10.0.0.1                # Filter by IP
 ```
 
 ### "I want to block/unblock an IP"
@@ -75,6 +96,8 @@ infynon status                             # Show current settings
 infynon config check                       # Validate config file
 infynon config show                        # Show effective config with defaults
 ```
+
+---
 
 ## Configuration Guide (infynon.toml)
 
@@ -190,6 +213,8 @@ block_threshold = 100              # Alert after N blocks
 | `Flag` | Allow but log for review |
 | `RateLimit` | Apply rate limiting |
 
+---
+
 ## TUI Dashboard (7 Views)
 
 When the user is using the TUI, help them with these shortcuts:
@@ -210,6 +235,8 @@ When the user is using the TUI, help them with these shortcuts:
 - `r` — Reload config from file
 - `m` — Toggle maintenance mode (503 all requests)
 
+---
+
 ## Key Behaviors to Explain to Users
 
 - **Hot reload**: Config changes are picked up every 2 seconds — no restart needed (except listen port/upstream changes)
@@ -217,5 +244,6 @@ When the user is using the TUI, help them with these shortcuts:
 - **Auto-banning**: IPs exceeding `auto_ban_threshold` blocked requests are automatically banned
 - **JSONL logs**: Written to `access.jsonl` and `blocked.jsonl` for easy parsing
 - **Cross-platform**: Works on Windows, macOS, and Linux
+- **Config paths**: `./infynon.toml` (local) or `~/.infynon/infynon.toml` (global)
 
 For workflow examples, see [examples/scenarios.md](examples/scenarios.md).
