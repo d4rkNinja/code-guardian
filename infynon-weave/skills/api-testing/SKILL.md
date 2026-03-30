@@ -51,9 +51,70 @@ cargo install --git https://github.com/d4rkNinja/infynon-cli        # From sourc
 
 ---
 
+## OpenAPI / Swagger Import
+
+Import an entire API spec in one command — generates nodes, extractions, assertions, and optionally a wired flow.
+
+```bash
+# Dry-run preview — nothing is saved
+infynon weave import openapi.yaml --dry-run
+infynon weave import swagger.json --dry-run
+
+# Import all nodes
+infynon weave import openapi.yaml
+
+# Import and create a flow
+infynon weave import openapi.yaml --flow "my-api-flow"
+
+# Filter to specific path prefix only
+infynon weave import openapi.yaml --prefix /api/v1
+
+# Override base URL from spec
+infynon weave import openapi.yaml --base-url http://staging.myapi.com
+```
+
+**What gets auto-generated per operation:**
+- Node ID from `operationId` (camelCase → kebab-case) or `METHOD-path`
+- `Content-Type: application/json` for POST/PUT/PATCH
+- `Authorization: Bearer {$AUTH_TOKEN}` for non-auth endpoints (reads from env)
+- Body template from `requestBody` schema — string fields become `{field_name}` placeholders
+- Extractions from response schema (id, token, *_id, *_token, *_url fields)
+- `status == 2xx` assertion + `body exists` assertion
+
+Supports: OpenAPI 3.x (.yaml/.json) and Swagger 2.x, with `$ref` resolution.
+
+---
+
+## Env Variables in Nodes
+
+Use `{$ENV_VAR_NAME}` in any field (path, headers, body) to pull from environment:
+
+```bash
+# In a node's Authorization header:
+Authorization: Bearer {$AUTH_TOKEN}
+
+# In a path:
+/api/{$API_VERSION}/users
+
+# In a body:
+{"api_key": "{$MY_API_KEY}", "user_id": "{user_id}"}
+```
+
+**Resolution order:** `.env` file in current directory → process environment variables.
+
+**`.env` file format:**
+```env
+AUTH_TOKEN=my-secret-token
+API_KEY=abc123
+BASE_URL=http://localhost:8001
+# Comments are ignored
+```
+
+---
+
 ## Node Commands
 
-Nodes are stored as TOML in `.infynon/api/nodes/{id}.toml`.
+Nodes are stored in `.infynon/api/nodes/` (format auto-detected from existing project files).
 
 ### Create a node
 
@@ -91,7 +152,7 @@ infynon weave node run <id> --set token=abc123 --set user_id=42
 
 ## Flow Commands
 
-Flows are stored as TOML in `.infynon/api/flows/{id}.toml`. Run history is stored as JSON in `.infynon/api/runs/`.
+Flows are stored in `.infynon/api/flows/`. Run history is in `.infynon/api/runs/`.
 
 ### Create a flow
 
@@ -334,8 +395,13 @@ infynon weave tui --flow-id <id>     # Open TUI on specific flow
 - `?` — Help overlay
 - `q` — Quit
 
+**Overview view keys (view 1):**
+- `↑` / `↓` — Select a flow
+- `Enter` or `a` — Run selected flow (switches to Live Execution automatically)
+- Real-time results appear in view 3 (Live) as steps complete
+
 **Flow Graph view keys:**
-- `↑` / `↓` — Navigate nodes
+- `↑` / `↓` / `←` / `→` — Navigate nodes
 - `Enter` — Show node detail panel
 - `a` — Start attach mode (select a target node to wire)
 - `Esc` — Cancel attach / close panel
