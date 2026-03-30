@@ -1,13 +1,13 @@
 ---
-name: api-testing
-description: Help users build, run, and analyze API test flows using INFYNON. Use when the user asks about API testing, integration testing, flow-based testing, testing API sequences, security probing API endpoints, or when .infynon/api/ directory is detected in the project. Covers node creation, flow building, AI-assisted wiring, security probes, and TUI visualization.
+name: weave
+description: Help users build, run, and analyze API test flows with INFYNON Weave (`infynon weave`). Use when the user asks about API testing, integration testing, flow-based testing, testing API sequences, security probing endpoints, or when .infynon/api/ directory is detected. Covers node creation, flow building, AI-assisted wiring, security probes, and TUI visualization.
 ---
 
-# INFYNON API Testing Suite
+# INFYNON Weave — API Flow Testing
 
-You are helping the user work with **INFYNON** (`infynon api`) — an AI-driven, node-based API flow testing system built into the INFYNON CLI.
+You are helping the user work with **INFYNON** (`infynon weave`) — an AI-driven, node-based API flow testing system built into the INFYNON CLI.
 
-Instead of testing a single endpoint in isolation, INFYNON API models your backend as a **directed graph**:
+Instead of testing a single endpoint in isolation, INFYNON Weave models your backend as a **directed graph**:
 - **Node** = one API call (method, path, headers, body, assertions, extractions)
 - **Edge** = directed connection between two nodes, carrying context variables between them
 - **Flow** = named graph of nodes + edges representing a complete test scenario
@@ -46,32 +46,32 @@ Nodes are stored as TOML in `.infynon/api/nodes/{id}.toml`.
 
 ```bash
 # Interactive wizard
-infynon api node create
+infynon weave node create
 
 # AI-generated from natural language description
-infynon api node create --ai "POST login with email and password, extracts token"
-infynon api node create --ai "GET user profile by user_id"
-infynon api node create --ai "DELETE product by product_id, returns 204"
-infynon api node create --ai "POST create cart, extracts cart_id"
+infynon weave node create --ai "POST login with email and password, extracts token"
+infynon weave node create --ai "GET user profile by user_id"
+infynon weave node create --ai "DELETE product by product_id, returns 204"
+infynon weave node create --ai "POST create cart, extracts cart_id"
 ```
 
 ### Manage nodes
 
 ```bash
-infynon api node list                        # List all nodes with method + path
-infynon api node get <id>                    # Show full node details
-infynon api node remove <id>                 # Delete a node
-infynon api node clone <id>                  # Duplicate a node (new id)
-infynon api node export <id>                 # Print node as JSON
+infynon weave node list                        # List all nodes with method + path
+infynon weave node get <id>                    # Show full node details
+infynon weave node remove <id>                 # Delete a node
+infynon weave node clone <id>                  # Duplicate a node (new id)
+infynon weave node export <id>                 # Print node as JSON
 ```
 
 ### Run a single node
 
 ```bash
-infynon api node run <id>                                   # Run against default base URL
-infynon api node run <id> --base-url http://localhost:3000  # Specify server
-infynon api node run <id> --set token=abc123                # Inject context variables
-infynon api node run <id> --set token=abc123 --set user_id=42
+infynon weave node run <id>                                   # Run against default base URL
+infynon weave node run <id> --base-url http://localhost:3000  # Specify server
+infynon weave node run <id> --set token=abc123                # Inject context variables
+infynon weave node run <id> --set token=abc123 --set user_id=42
 ```
 
 ---
@@ -84,27 +84,27 @@ Flows are stored as TOML in `.infynon/api/flows/{id}.toml`. Run history is store
 
 ```bash
 # Interactive — select nodes and wire them manually
-infynon api flow create "checkout-flow"
+infynon weave flow create "checkout-flow"
 
 # AI-generated — describe what you want to test
-infynon api flow create "checkout-flow" --ai "test the full checkout: login, create cart, add items, checkout"
-infynon api flow create "auth-flow" --ai "register user, then login, then get profile"
+infynon weave flow create "checkout-flow" --ai "test the full checkout: login, create cart, add items, checkout"
+infynon weave flow create "auth-flow" --ai "register user, then login, then get profile"
 ```
 
 ### Manage flows
 
 ```bash
-infynon api flow list                        # List all flows with node count
-infynon api flow show <id>                   # ASCII graph visualization + edge list
-infynon api flow remove <id>                 # Delete a flow
-infynon api flow merge <id1> <id2>           # Merge two flows into one
+infynon weave flow list                        # List all flows with node count
+infynon weave flow show <id>                   # ASCII graph visualization + edge list
+infynon weave flow remove <id>                 # Delete a flow
+infynon weave flow merge <id1> <id2>           # Merge two flows into one
 ```
 
 ### Run a flow
 
 ```bash
-infynon api flow run <id>                                   # Run with live step-by-step output
-infynon api flow run <id> --base-url http://localhost:3000  # Override base URL
+infynon weave flow run <id>                                   # Run with live step-by-step output
+infynon weave flow run <id> --base-url http://localhost:3000  # Override base URL
 ```
 
 **Live output format:**
@@ -125,21 +125,21 @@ Connect nodes into a flow manually when you want precise control.
 
 ```bash
 # Attach: after node A executes, node B runs next
-infynon api attach <from-id> <to-id>
+infynon weave attach <from-id> <to-id>
 
 # Carry specific variables on the edge (default: carry all)
-infynon api attach login-node cart-node --carry token
-infynon api attach login-node cart-node --carry token,user_id
+infynon weave attach login-node cart-node --carry token
+infynon weave attach login-node cart-node --carry token,user_id
 
 # Conditional edge: only follow if assertion passes
-infynon api attach cart-node checkout-node --condition "status == 201"
-infynon api attach auth-node admin-panel --condition "body.role == admin"
+infynon weave attach cart-node checkout-node --condition "status == 201"
+infynon weave attach auth-node admin-panel --condition "body.role == admin"
 
 # AI-inferred carry (AI decides what to carry based on variable names)
-infynon api attach login-node cart-node --ai
+infynon weave attach login-node cart-node --ai
 
 # Remove a connection
-infynon api detach <from-id> <to-id>
+infynon weave detach <from-id> <to-id>
 ```
 
 ---
@@ -155,7 +155,7 @@ INFYNON AI uses heuristic pattern analysis — no external LLM required:
 ### Suggest next nodes
 
 ```bash
-infynon api ai suggest <node-id>
+infynon weave ai suggest <node-id>
 # Shows ranked candidates with confidence score and reason
 ```
 
@@ -171,48 +171,48 @@ infynon api ai suggest <node-id>
 ### AI attach — describe what to connect next
 
 ```bash
-infynon api ai attach <from-id> "the endpoint that creates the shopping cart"
-infynon api ai attach <from-id> "anything that needs the auth token" --flow-id <flow-id>
+infynon weave ai attach <from-id> "the endpoint that creates the shopping cart"
+infynon weave ai attach <from-id> "anything that needs the auth token" --flow-id <flow-id>
 ```
 
 ### AI complete — fill gaps in an existing flow
 
 ```bash
-infynon api ai complete <flow-id>
+infynon weave ai complete <flow-id>
 # Finds orphan nodes (not connected) and wires them into the flow automatically
 ```
 
 ### AI build-flow — build entire flow from scratch
 
 ```bash
-infynon api ai build-flow "full-checkout" --ai "login, create cart, add product, checkout, verify order"
+infynon weave ai build-flow "full-checkout" --ai "login, create cart, add product, checkout, verify order"
 # AI wires all matching nodes into a complete flow
 ```
 
 ### AI generate assertions and extractions
 
 ```bash
-infynon api ai assert <node-id>
+infynon weave ai assert <node-id>
 # Generates smart defaults:
 #   POST → status == 201, body.id exists, header.content-type contains application/json
 #   DELETE → status == 204
 #   GET → status == 200
 
-infynon api ai complete <flow-id>   # Also patches missing assertions on all nodes
+infynon weave ai complete <flow-id>   # Also patches missing assertions on all nodes
 ```
 
 ### AI branch — add conditional branching
 
 ```bash
-infynon api ai branch <flow-id> <node-id>
-infynon api ai branch checkout-flow cart-node --condition "body.items > 0"
+infynon weave ai branch <flow-id> <node-id>
+infynon weave ai branch checkout-flow cart-node --condition "body.items > 0"
 # Adds a conditional edge from node — only followed when condition is true
 ```
 
 ### AI explain — diagnose flow failures
 
 ```bash
-infynon api ai explain <flow-id>
+infynon weave ai explain <flow-id>
 # Human-readable diagnosis of the last failed run:
 #   - Which step failed and why
 #   - What assertion failed (actual vs expected)
@@ -227,8 +227,8 @@ infynon api ai explain <flow-id>
 Run automated security checks against your API after a successful flow run.
 
 ```bash
-infynon api ai probe <flow-id>
-infynon api ai probe <flow-id> --base-url http://localhost:3000
+infynon weave ai probe <flow-id>
+infynon weave ai probe <flow-id> --base-url http://localhost:3000
 ```
 
 **Three probes run automatically:**
@@ -253,7 +253,7 @@ infynon api ai probe <flow-id> --base-url http://localhost:3000
 
 ## Assertion Syntax
 
-Assertions are evaluated against each node's response. Add them when creating nodes or via `infynon api ai assert`.
+Assertions are evaluated against each node's response. Add them when creating nodes or via `infynon weave ai assert`.
 
 ```
 status == 200          status != 404          status >= 200         status <= 299
@@ -298,8 +298,8 @@ body: {"cart_id": "{cart_id}", "quantity": 1}
 ## TUI — 9-View Dashboard
 
 ```bash
-infynon api tui                    # Open TUI, last active flow
-infynon api tui --flow-id <id>     # Open TUI on specific flow
+infynon weave tui                    # Open TUI, last active flow
+infynon weave tui --flow-id <id>     # Open TUI on specific flow
 ```
 
 | Key | View | What It Shows |
@@ -334,39 +334,39 @@ infynon api tui --flow-id <id>     # Open TUI on specific flow
 ### "I want to test my entire auth + checkout flow"
 ```bash
 # 1. Create nodes for each step
-infynon api node create --ai "POST /auth/login with email and password, extracts token and user_id"
-infynon api node create --ai "POST /cart/create extracts cart_id"
-infynon api node create --ai "POST /cart/items add product_id and quantity"
-infynon api node create --ai "POST /cart/checkout"
+infynon weave node create --ai "POST /auth/login with email and password, extracts token and user_id"
+infynon weave node create --ai "POST /cart/create extracts cart_id"
+infynon weave node create --ai "POST /cart/items add product_id and quantity"
+infynon weave node create --ai "POST /cart/checkout"
 
 # 2. Let AI build the flow
-infynon api flow create "checkout" --ai "login then create cart then add items then checkout"
+infynon weave flow create "checkout" --ai "login then create cart then add items then checkout"
 
 # 3. Run it
-infynon api flow run checkout --base-url http://localhost:3000
+infynon weave flow run checkout --base-url http://localhost:3000
 
 # 4. Run security probes
-infynon api ai probe checkout --base-url http://localhost:3000
+infynon weave ai probe checkout --base-url http://localhost:3000
 ```
 
 ### "I want to test my API and see why it's failing"
 ```bash
-infynon api flow run <flow-id> --base-url http://localhost:3000
-infynon api ai explain <flow-id>
+infynon weave flow run <flow-id> --base-url http://localhost:3000
+infynon weave ai explain <flow-id>
 ```
 
 ### "I want to add a new endpoint to an existing flow"
 ```bash
-infynon api node create --ai "GET /orders/{order_id} returns order details"
-infynon api ai attach <checkout-node-id> "the endpoint that retrieves the order after checkout"
+infynon weave node create --ai "GET /orders/{order_id} returns order details"
+infynon weave ai attach <checkout-node-id> "the endpoint that retrieves the order after checkout"
 # or
-infynon api ai complete <flow-id>    # AI finds and wires orphan nodes automatically
+infynon weave ai complete <flow-id>    # AI finds and wires orphan nodes automatically
 ```
 
 ### "I want to check security of my API"
 ```bash
-infynon api flow run <flow-id> --base-url http://staging.myapi.com
-infynon api ai probe <flow-id> --base-url http://staging.myapi.com
+infynon weave flow run <flow-id> --base-url http://staging.myapi.com
+infynon weave ai probe <flow-id> --base-url http://staging.myapi.com
 ```
 
 ---
