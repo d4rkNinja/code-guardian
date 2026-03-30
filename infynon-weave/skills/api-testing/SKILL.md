@@ -141,9 +141,19 @@ Authorization: Bearer {$AUTH_TOKEN}
 {"api_key": "{$MY_API_KEY}", "user_id": "{user_id}"}
 ```
 
-**Resolution order:** `.env` file in current directory → process environment variables.
+**Resolution order:** `.env` file in `.infynon/.env` → process environment variables.
 
-**`.env` file format:**
+**Manage `.env` with CLI (do NOT hand-edit the file):**
+```bash
+infynon weave env set AUTH_TOKEN eyJhbGci...   # Add or update a variable
+infynon weave env set BASE_URL http://staging.example.com
+infynon weave env list                          # List all variables (sensitive values masked)
+infynon weave env get AUTH_TOKEN                # Show single variable (masked)
+infynon weave env get AUTH_TOKEN --reveal       # Show full value
+infynon weave env delete OLD_TOKEN              # Remove a variable
+```
+
+**`.env` file format** (for reference — always use CLI to edit):
 ```env
 AUTH_TOKEN=my-secret-token
 API_KEY=abc123
@@ -233,10 +243,12 @@ The prompted value is injected as `{var_name}` in the request path, headers, and
 ### Run a single node
 
 ```bash
-infynon weave node run <id>                                   # Run against default base URL
-infynon weave node run <id> --base-url http://localhost:3000  # Specify server
-infynon weave node run <id> --set token=abc123                # Inject context variables
+infynon weave node run <id>                                         # Run against default base URL
+infynon weave node run <id> --base-url http://localhost:3000        # Specify server
+infynon weave node run <id> --set token=abc123                      # Inject context variables
 infynon weave node run <id> --set token=abc123 --set user_id=42
+infynon weave node run <id> --prompt                                # Interactively ask for all unresolved {placeholders}
+infynon weave node run <id> --set token=known --prompt              # Pre-fill known vars, prompt only for the rest
 ```
 
 ---
@@ -657,7 +669,7 @@ infynon weave flow run auth-flow
 infynon weave node create [--ai "description"]
 infynon weave node list
 infynon weave node get <id>
-infynon weave node run <id> [--base-url URL] [--set KEY=VALUE ...]
+infynon weave node run <id> [--base-url URL] [--set KEY=VALUE ...] [--prompt]
 infynon weave node clone <id> <new-id>
 infynon weave node export <id> [--format curl|json] [--base-url URL]
 infynon weave node remove <id>
@@ -670,8 +682,8 @@ infynon weave node prompt <id> list|add|remove
 infynon weave flow create <name> [--ai "description"]
 infynon weave flow list
 infynon weave flow show <id>
-infynon weave flow run <id> [--base-url URL] [--output markdown|pdf|both]
-infynon weave flow run-all [--base-url URL] [--output markdown|pdf|both]
+infynon weave flow run <id> [--base-url URL] [--set KEY=VALUE ...] [--output markdown|pdf|both]
+infynon weave flow run-all [--base-url URL] [--set KEY=VALUE ...] [--output markdown|pdf|both]
 infynon weave flow remove <id>
 infynon weave flow merge <id1> <id2> --join-at <node-id> [--name NAME]
 ```
@@ -685,6 +697,15 @@ infynon weave detach <from> <to>
 ### import
 ```bash
 infynon weave import <spec-file> [--flow NAME] [--base-url URL] [--prefix /path] [--dry-run]
+```
+
+### env
+```bash
+infynon weave env set <KEY> <VALUE>    # Add or update a variable in .infynon/.env
+infynon weave env list                 # List all variables (sensitive values masked)
+infynon weave env get <KEY>            # Show value (masked if sensitive)
+infynon weave env get <KEY> --reveal   # Show full value
+infynon weave env delete <KEY>         # Remove a variable
 ```
 
 ### validate
