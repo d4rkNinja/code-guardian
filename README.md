@@ -86,7 +86,7 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 - Help write firewall configurations (`infynon.toml`)
 - Guide users through TUI keyboard shortcuts
 - Explain vulnerability scan results and fix options
-- Recommend CI-friendly flags (`--strict`, `--auto-fix`, `--skip-vulnerable`)
+- Recommend CI-friendly flags (`--strict`, `--auto-fix`, `--skip-vulnerable`, `--agent`)
 
 ### Skills
 
@@ -119,10 +119,14 @@ infynon pkg uv add fastapi
 infynon pkg cargo add serde
 
 # CI / non-interactive flags (no prompts)
-infynon pkg npm install express --strict high      # fail build on critical/high
+infynon pkg npm install express --strict high      # fail build on critical/high (exit 3)
 infynon pkg npm install express --auto-fix         # auto-upgrade to safe versions
 infynon pkg npm install express --skip-vulnerable  # skip bad packages silently
 infynon pkg npm install express --yes              # install everything (audit-only CI)
+
+# AI agent mode — structured JSON output
+infynon pkg scan --agent                           # JSON scan: status/vulns/summary
+infynon pkg npm install express --agent --strict high   # JSON: installed/blocked/vulns
 
 # Auto-fix all vulnerabilities
 infynon pkg fix --auto
@@ -156,14 +160,17 @@ infynon pkg eagle-eye setup
 infynon pkg eagle-eye start
 ```
 
-### CI Flag Reference
+### CI / Agent Flag Reference
 
 | Flag | Behavior | Exit Code |
 |------|----------|-----------|
-| `--strict [LEVEL]` | Fail if vulnerabilities at/above level are found | `1` on block |
+| `--agent` | **JSON output — recommended for all AI agent commands** | `0/1/2/3` |
+| `--strict [LEVEL]` | Block if vulnerabilities at/above level are found | `3` on block |
 | `--auto-fix` | Upgrade to safe versions silently; skip if no fix | `0` |
 | `--skip-vulnerable` | Skip vulnerable packages, install clean ones | `0` |
 | `--yes` | Install all packages including vulnerable ones | `0` |
+
+**`--agent` exit codes:** `0` = clean · `1` = warnings · `2` = vulnerable · `3` = blocked
 
 ### Supported Ecosystems
 
