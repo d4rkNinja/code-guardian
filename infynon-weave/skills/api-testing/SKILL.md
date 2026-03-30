@@ -280,11 +280,14 @@ infynon weave flow merge <id1> <id2>           # Merge two flows into one
 ### Run a flow
 
 ```bash
-infynon weave flow run <id>                                   # Run with live step-by-step output
-infynon weave flow run <id> --base-url http://localhost:3000  # Override base URL
-infynon weave flow run <id> --output markdown                 # Save report to ./reports/
-infynon weave flow run <id> --output pdf                      # Save PDF report
-infynon weave flow run <id> --output both                     # Save both formats
+infynon weave flow run <id>                                          # Run with live step-by-step output
+infynon weave flow run <id> --base-url http://localhost:3000         # Override base URL
+infynon weave flow run <id> --set token=abc123                       # Pre-seed context variable
+infynon weave flow run <id> --set token=abc123 --set user_id=42      # Multiple pre-seeded vars
+infynon weave flow run <id> --output markdown                        # Save report to ./reports/
+infynon weave flow run <id> --output both                            # Save markdown + PDF
+infynon weave flow run-all --base-url http://localhost:3000          # Run every flow in sequence
+infynon weave flow run-all --set token=abc --output markdown         # Run-all with seed + report
 ```
 
 **Live output format:**
@@ -335,7 +338,7 @@ INFYNON AI uses heuristic pattern analysis — no external LLM required:
 ### Suggest next nodes
 
 ```bash
-infynon weave ai suggest <node-id>
+infynon weave ai suggest --after <node-id>
 # Shows ranked candidates with confidence score and reason
 ```
 
@@ -486,7 +489,7 @@ infynon weave tui <flow-id>     # Open TUI on a specific flow
 |-----|-----|---------------|
 | `1` | Overview | All flows list with last run status + quick stats. `Enter`/`a` to run. |
 | `2` | Flow Graph | Box-drawing node visualization with directed edges and sidebar info |
-| `3` | Live Execution | Step-by-step run feed with assertion results per step |
+| `3` | Live Execution | Step-by-step run feed. Select a step with `↑`/`↓`, press `Enter` to see full detail (error, assertions, request/response body, extracted vars) |
 | `4` | Latency Profiler | Bar chart sorted slowest → fastest, p95/avg/max per node |
 | `5` | Security Probes | Auth bypass / rate limit / SQLi probe results |
 | `6` | Coverage Map | Per-node coverage gauges (how many times run, pass rate) |
@@ -519,6 +522,10 @@ infynon weave tui <flow-id>     # Open TUI on a specific flow
 | `↑` / `↓` | Navigate nodes |
 | `Enter` / `r` | Run selected node in isolation |
 | `b` | Open interactive body editor for the selected node |
+| `n` | Edit node name inline |
+| `p` | Edit node path inline |
+| `d` | Edit node description inline |
+| `m` | Cycle HTTP method (GET → POST → PUT → PATCH → DELETE → GET) |
 | `/` | Search nodes by ID or path |
 
 **Body Editor (opened with `b` in tab 9):**
