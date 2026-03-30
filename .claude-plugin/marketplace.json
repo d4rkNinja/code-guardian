@@ -13,7 +13,7 @@
       "name": "infynon-pkg",
       "source": "./infynon-pkg",
       "description": "INFYNON Package Security Manager — Universal secure package installation, CVE scanning, auto-fix, dependency auditing, and vulnerability monitoring across 14 ecosystems",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "category": "security",
       "tags": ["security", "package-manager", "cve", "vulnerability", "npm", "pip", "cargo", "uv"],
       "keywords": ["security", "package-manager", "cve", "osv", "supply-chain"]
@@ -22,7 +22,7 @@
       "name": "infynon-firewall",
       "source": "./infynon-firewall",
       "description": "INFYNON Network Firewall — Real-time reverse proxy WAF with TUI dashboard, multi-stage pipeline, rate limiting, IP filtering, and email alerts",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "category": "security",
       "tags": ["firewall", "waf", "reverse-proxy", "security", "tui", "rate-limiter"],
       "keywords": ["firewall", "waf", "network-security", "rate-limiter", "ddos"]

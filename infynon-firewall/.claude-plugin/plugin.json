@@ -1,7 +1,7 @@
 {
   "name": "infynon-firewall",
   "description": "INFYNON Network Firewall — Real-time reverse proxy WAF with TUI dashboard, multi-stage request pipeline (IP filter, rate limiter, WAF, custom rules), multi-upstream routing, hot config reload, maintenance mode, email alerts, and live TUI config editing",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "d4rkNinja",
     "email": "d4rkninja@proton.me"
