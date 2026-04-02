@@ -1,14 +1,22 @@
 # Code Guardian
 
-Claude Code plugins for the **INFYNON** security suite — a Rust-based dual-mode security tool for package dependency protection and network firewall management.
+Claude Code plugins for the **INFYNON** suite — package security, API flow testing, and shared coding memory.
 
 ## Plugins
 
-### 🔐 infynon-pkg — Package Security Manager
+### infynon-pkg — Package Security Manager
 Universal secure package installation, CVE scanning, auto-fix, dependency auditing, and vulnerability monitoring across **14 ecosystems** (npm, yarn, pnpm, bun, pip, uv, poetry, cargo, go, gem, composer, nuget, hex, pub).
 
-### 🛡️ infynon-firewall — Network Firewall
-Real-time reverse proxy WAF with TUI dashboard, multi-stage request pipeline (IP filter → rate limiter → WAF → custom rules), multi-upstream routing, hot config reload, maintenance mode, and email alerts.
+### infynon-weave — API Flow Testing
+AI-driven node-based API flow testing with security probes, TUI visualization, assertion engine, context threading, and automated flow building.
+
+### infynon-loom — Shared Coding Memory
+Three-layer memory operating system for codebases:
+- **Canonical memory** — architecture decisions, API contracts, security constraints (highest trust, promoted only)
+- **Team memory** — handoffs, PR notes, caveats, branch context (medium trust, agent-writable)
+- **User memory** — personal observations, task context, experiments (low trust, promotable)
+
+With session hooks (auto-load on start, capture on end), Redis and SQL backends, TUI inspection, and promotion workflows.
 
 ---
 
@@ -53,6 +61,7 @@ Pre-built binaries also available on the [Releases page](https://github.com/d4rk
 ```bash
 infynon --version
 infynon pkg --help
+infynon loom --help
 ```
 
 ### Step 2: Install Claude Code Plugins
@@ -63,7 +72,8 @@ infynon pkg --help
 
 # Install plugins
 /plugin install infynon-pkg@d4rkNinja
-/plugin install infynon-firewall@d4rkNinja
+/plugin install infynon-weave@d4rkNinja
+/plugin install infynon-loom@d4rkNinja
 
 # Activate
 /reload-plugins
@@ -71,7 +81,7 @@ infynon pkg --help
 
 Or load locally for development:
 ```bash
-claude --plugin-dir ./infynon-pkg --plugin-dir ./infynon-firewall
+claude --plugin-dir ./infynon-pkg --plugin-dir ./infynon-weave --plugin-dir ./infynon-loom
 ```
 
 ---
@@ -83,7 +93,8 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 - Check if INFYNON is installed and guide through installation if not found
 - Recommend the right `infynon` commands based on what the user is trying to do
 - Detect lock files and suggest security scans
-- Help write firewall configurations (`infynon.toml`)
+- Help manage coding memory across canonical, team, and user layers
+- Run session hooks to load/save memory automatically
 - Guide users through TUI keyboard shortcuts
 - Explain vulnerability scan results and fix options
 - Recommend CI-friendly flags (`--strict`, `--auto-fix`, `--skip-vulnerable`, `--agent`)
@@ -93,14 +104,39 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 | Plugin | Skill | Auto-triggers When |
 |--------|-------|--------------------|
 | infynon-pkg | `package-security` | User asks about package vulnerabilities, CVE scanning, dependency auditing, or Claude detects lock files in the project |
-| infynon-firewall | `firewall-setup` | User asks about firewall config, WAF rules, rate limiting, IP blocking, traffic monitoring, or Claude detects `infynon.toml` |
+| infynon-pkg | `cve-triage` | User needs help interpreting CVE scan results or prioritizing fixes |
+| infynon-pkg | `eagle-eye-monitor` | User wants continuous vulnerability monitoring with email alerts |
+| infynon-weave | `api-testing` | User asks about API testing, flow building, security probes, or Claude detects `.infynon/api/` in the project |
+| infynon-loom | `memory-ops` | User asks about coding memory, notes, handoffs, or Claude detects `.infynon/loom/` in the project |
+| infynon-loom | `canonical-memory` | User asks about architecture decisions, truth memory, or validated knowledge |
+| infynon-loom | `session-hooks` | Session starts or ends, user asks about memory hooks |
 
 ### Agents
 
 | Plugin | Agent | Purpose |
 |--------|-------|---------|
 | infynon-pkg | `pkg-guardian` | Deep package security analysis, CVE triage, migration guidance, CI setup |
-| infynon-firewall | `fw-guardian` | Firewall setup, rule authoring, attack investigation, config tuning |
+| infynon-weave | `api-guardian` | API flow design, node wiring, security probe interpretation, CI pipelines |
+| infynon-loom | `loom-guardian` | Memory layer management, promotion workflows, session hooks, backend setup |
+
+### Hooks (Opt-In)
+
+Loom hooks are installed **per-project** in `.claude/settings.json` when the user explicitly asks. They are never auto-installed or placed in system-level settings.
+
+| Hook | Trigger | Behavior |
+|------|---------|----------|
+| `SessionStart` | New conversation begins | Load canonical memory (always), ask about team memory, optionally load user memory, pull from remote |
+| `Stop` | Claude finishes responding | Remind to save observations, compact stale notes, push to remote. Never auto-writes canonical. |
+
+**Install hooks:**
+```bash
+# Run the install script in your project directory
+bash <path-to-code-guardian>/infynon-loom/hooks/install.sh .
+
+# Or ask Claude: "Set up loom hooks for this project"
+```
+
+Hooks are written to `<your-project>/.claude/settings.json` — not `~/.claude/settings.json`.
 
 ---
 
@@ -178,56 +214,102 @@ npm, yarn, pnpm, bun, pip, uv, poetry, cargo, go, gem, composer, nuget, hex, pub
 
 ---
 
-## Network Firewall — Quick Reference
+## Loom — Shared Coding Memory
+
+### Three-Layer Memory Model
+
+```
+┌─────────────────────────────────────────────┐
+│  Canonical Memory (Highest Trust)           │
+│  Architecture, API contracts, constraints   │
+│  Promoted only. Never auto-written.         │
+├─────────────────────────────────────────────┤
+│  Team Memory (Medium Trust)                 │
+│  Handoffs, caveats, PR notes, branch ctx    │
+│  Agent-writable. Compacted often.           │
+├─────────────────────────────────────────────┤
+│  User Memory (Low Trust)                    │
+│  Personal notes, observations, experiments  │
+│  Promotable to team. Never affects canon.   │
+└─────────────────────────────────────────────┘
+```
+
+### Quick Reference
 
 ```bash
-# Initialize config
-infynon init --port 8080 --upstream 127.0.0.1 --upstream-port 3000
+# Initialize Loom
+infynon loom init --repo my-project --owner team --user alien
 
-# Start firewall + TUI
-infynon start
+# Add a backend
+infynon loom source add-sql team-db \
+  --engine sqlite \
+  --url sqlite://.infynon/loom/loom.db \
+  --user alien --default
 
-# Start without TUI (servers)
-infynon start --headless
+# Create notes
+infynon loom note add arch-decision \
+  --title "Auth uses middleware" \
+  --body "All auth flows go through middleware" \
+  --layer canonical --scope repo
 
-# Monitor traffic
-infynon monitor
+infynon loom note add handoff-payment \
+  --title "Payment webhook incomplete" \
+  --body "Stripe webhook handler needs idempotency testing" \
+  --layer team --scope branch --target feature/payment
 
-# Block/unblock IPs
-infynon block 10.0.0.1
-infynon unblock 10.0.0.1
+# Retrieve memory
+infynon loom retrieve --layer canonical
+infynon loom retrieve --layer team --scope branch --target feature/payment
+infynon loom retrieve --tag handoff
 
-# Manage rules
-infynon rules list
-infynon rules enable <name>
+# Sync
+infynon loom sync --direction both
 
-# View logs
-infynon logs --verdict block --since 1h
+# Compact stale notes
+infynon loom compact
 
-# Validate config
-infynon config check
+# TUI
+infynon loom tui
 ```
 
-### Architecture
+### Session Hooks
+
+**Session start:**
+1. Load canonical memory (always)
+2. Ask: "Load team memory?" → yes/no
+3. Optionally load user memory
+4. Pull from remote
+
+**Session end:**
+1. Ask: "Any observations to save?"
+2. Mark stale notes
+3. Flag promotion candidates
+4. Compact and sync
+5. Never auto-write canonical
+
+### Note Scopes
+
+| Scope | Example |
+|-------|---------|
+| `repo` | Repository-wide architectural facts |
+| `branch` | Branch-specific handoff context |
+| `pr` | PR-linked notes for reviewers |
+| `file` | File-specific caveats and warnings |
+| `user` | User-scoped personal notes |
+| `session` | Temporary session context (auto-compacted) |
+| `package` | Dependency provenance and risk tracking |
+
+### Promotion Path
 
 ```
-Internet → INFYNON :8080 → [IP Filter → Rate Limiter → WAF → Custom Rules] → Backend :3000
-                ↕
-          TUI Dashboard (7 views)
+User Memory → Team Memory → Canonical Memory
+     │              │              │
+  Low trust    Medium trust    High trust
+  Personal     Shared          Validated
+  Auto-write   Agent-write     Promote only
 ```
 
-### TUI Shortcuts
-
-| Key | Action |
-|-----|--------|
-| 1-7 | Dashboard, Feed, Blocked, IPs, Rules, Stats, Config |
-| q | Quit |
-| / | Search |
-| ? | Help |
-| m | Maintenance mode |
-| r | Reload config |
-| b/u | Block/unblock IP |
-| s | Save config |
+Promotion requires: merge + validation + review + repeated reuse without contradiction.
 
 ---
 
@@ -280,19 +362,32 @@ rm -rf ~/.claude/plugins/cache     # Clear cache
 ```
 code-guardian/
 ├── .claude-plugin/
-│   └── marketplace.json            # Marketplace catalog
-├── infynon-pkg/                    # Package Security Manager plugin
+│   └── marketplace.json              # Marketplace catalog
+├── infynon-pkg/                      # Package Security Manager plugin
 │   ├── .claude-plugin/plugin.json
-│   ├── agents/pkg-guardian.md      # Package security agent
-│   └── skills/package-security/    # Contextual skill
-│       ├── SKILL.md                # Full command reference + guidance
-│       └── examples/workflows.md   # CI/CD, migration, audit workflows
-├── infynon-firewall/               # Network Firewall plugin
+│   ├── agents/pkg-guardian.md        # Package security agent
+│   └── skills/
+│       ├── package-security/         # Core package security skill
+│       ├── cve-triage/               # CVE interpretation and prioritization
+│       └── eagle-eye-monitor/        # Continuous vulnerability monitoring
+├── infynon-weave/                    # API Flow Testing plugin
 │   ├── .claude-plugin/plugin.json
-│   ├── agents/fw-guardian.md       # Firewall agent
-│   └── skills/firewall-setup/      # Contextual skill
-│       ├── SKILL.md                # Config guide + command reference
-│       └── examples/scenarios.md   # Protection, multi-upstream, attack investigation
+│   ├── agents/api-guardian.md        # API testing agent
+│   └── skills/
+│       └── api-testing/              # Flow building, probes, TUI
+├── infynon-loom/                     # Shared Coding Memory plugin
+│   ├── .claude-plugin/plugin.json
+│   ├── agents/loom-guardian.md       # Memory layer management agent
+│   ├── hooks/
+│   │   ├── session-start.md          # Load canonical + ask team memory
+│   │   ├── session-end.md            # Capture observations, compact, sync
+│   │   ├── settings-template.json    # Hook config template for .claude/settings.json
+│   │   └── install.sh                # Script to install hooks into a project
+│   └── skills/
+│       ├── memory-ops/               # Core memory operations
+│       │   └── examples/workflows.md
+│       ├── canonical-memory/         # Canonical layer management
+│       └── session-hooks/            # Session start/end workflows
 └── README.md
 ```
 

@@ -5,8 +5,8 @@
     "email": "d4rkninja@proton.me"
   },
   "metadata": {
-    "description": "INFYNON Security Suite — Package security manager, network firewall, and API testing plugins for Claude Code",
-    "version": "2.2.0"
+    "description": "INFYNON Suite — Package security, API flow testing, and shared coding memory plugins for Claude Code",
+    "version": "3.0.0"
   },
   "plugins": [
     {
@@ -19,15 +19,6 @@
       "keywords": ["security", "package-manager", "cve", "osv", "supply-chain"]
     },
     {
-      "name": "infynon-firewall",
-      "source": "./infynon-firewall",
-      "description": "INFYNON Network Firewall — Real-time reverse proxy WAF with TUI dashboard, multi-stage pipeline, rate limiting, IP filtering, and email alerts",
-      "version": "0.2.1",
-      "category": "security",
-      "tags": ["firewall", "waf", "reverse-proxy", "security", "tui", "rate-limiter"],
-      "keywords": ["firewall", "waf", "network-security", "rate-limiter", "ddos"]
-    },
-    {
       "name": "infynon-weave",
       "source": "./infynon-weave",
       "description": "INFYNON Weave — AI-driven node-based API flow testing, security probes, TUI visualization, assertion engine, and automated flow building. CLI: infynon weave",
@@ -35,6 +26,15 @@
       "category": "testing",
       "tags": ["api-testing", "flow-testing", "security-probes", "tui", "ai", "integration-testing"],
       "keywords": ["api-testing", "flow-testing", "http", "rest", "assertions", "security-probes", "weave"]
+    },
+    {
+      "name": "infynon-loom",
+      "source": "./infynon-loom",
+      "description": "INFYNON Loom — Three-layer coding memory operating system (canonical/team/user) with session hooks, Redis and SQL backends, TUI inspection, PR-linked notes, and promotion workflows",
+      "version": "0.2.1",
+      "category": "memory",
+      "tags": ["memory", "loom", "canonical", "team", "coding-memory", "notes", "tui", "hooks"],
+      "keywords": ["memory", "loom", "canonical", "team", "user", "session-hooks", "coding-memory"]
     }
   ]
 }
