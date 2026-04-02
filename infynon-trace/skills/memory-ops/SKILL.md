@@ -1,3 +1,9 @@
+---
+name: memory-ops
+description: Store, retrieve, and manage codebase knowledge in INFYNON Trace. Use when user asks about shared notes, handoffs, PR context, architecture memory, backends (Redis/SQL), or when .infynon/trace/ is detected.
+allowed-tools: Bash
+---
+
 # Memory Operations — Trace Skill
 
 ## When to Use

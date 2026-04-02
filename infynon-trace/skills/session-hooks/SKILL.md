@@ -1,3 +1,9 @@
+---
+name: session-hooks
+description: Configure and run INFYNON Trace session hooks for automatic memory loading and saving. Install only when user explicitly asks — hooks go in project .claude/settings.json, never system-level.
+disable-model-invocation: true
+---
+
 # Session Hooks — Trace Skill
 
 ## When to Use
@@ -13,8 +19,8 @@ Activate this skill when:
 
 Session hooks are the automated entry and exit points for Trace's memory operating layer. They ensure that:
 
-- **On session start:** The agent is grounded in validated knowledge before writing any code
-- **On session end:** New observations are captured and memory is kept clean
+- **On session start:** The `@tracer` agent is invoked, presents the memory overview, and asks the user which layers to load before work begins
+- **On session end:** The `@tracer` agent auto-saves the session to user memory (no prompt), then asks the user if team memory should be updated too
 
 ## Installing Hooks (User Must Explicitly Ask)
 
@@ -37,24 +43,23 @@ Create `.claude/settings.json` in the project root:
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "",
+        "matcher": "startup|resume",
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== TRACE: Loading Canonical Memory ===' && infynon trace retrieve --layer canonical 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init --repo <name> --owner <team> --user <you>' && echo '---' && echo '[trace-hook] Canonical memory loaded. Ask user: \"Would you like to load team memory for this session?\" If yes, run: infynon trace retrieve --layer team'",
-            "timeout": 15
+            "command": "echo '=== INFYNON TRACE: MEMORY OVERVIEW ===' && infynon trace retrieve --layer canonical 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init --repo <name> --owner <team> --user <you>' && echo '' && echo '--- Team Memory Index ---' && infynon trace retrieve --layer team 2>/dev/null | head -20 || echo '(no team notes)' && echo '' && echo '--- User Memory Index ---' && infynon trace retrieve --layer user 2>/dev/null | head -10 || echo '(no user notes)' && echo '' && echo '[TRACE-HOOK] Invoke @tracer agent. Ask the user which memory layers to load before proceeding with the session.'",
+            "timeout": 20
           }
         ]
       }
     ],
     "Stop": [
       {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "echo '[trace-hook] Session ending. Remind user: \"Any observations worth saving? I can create team/user notes and run compaction.\" If user agrees, create notes with infynon trace note add, then run: infynon trace compact'",
-            "timeout": 10
+            "command": "INPUT=$(cat); if [ \"$(echo \"$INPUT\" | jq -r '.stop_hook_active // false')\" = \"true\" ]; then exit 0; fi; echo '[TRACE-HOOK] Task complete. Invoke @tracer agent to: (1) Auto-save session observations to user memory using infynon trace note add --layer user --tags session-output,auto-saved — no prompt needed. (2) Run infynon trace compact. (3) Ask user if highlights should also be saved to team memory.'",
+            "timeout": 5
           }
         ]
       }
@@ -65,8 +70,8 @@ Create `.claude/settings.json` in the project root:
 
 ### What the hooks do
 
-- **SessionStart:** Runs `infynon trace retrieve --layer canonical` and injects the output into Claude's context. Then prompts Claude to ask the user about loading team memory.
-- **Stop:** Injects a reminder for Claude to ask the user about saving observations and running compaction.
+- **SessionStart:** Runs `infynon trace retrieve` for all layers, injects the memory overview into Claude's context, and instructs Claude to invoke `@tracer` to ask the user which layers to load.
+- **Stop:** Checks `stop_hook_active` to prevent infinite loops. When work is complete, instructs `@tracer` to auto-save to user memory (no prompt) and ask about team memory.
 
 ### Important
 
@@ -232,47 +237,58 @@ infynon trace note add promote-<topic> \
 
 ## Hook Configuration
 
-### Claude Code Settings Hook (settings.json)
+### Reference: settings.json (full config)
 
-To run session hooks automatically, configure in Claude Code settings:
+The canonical hook configuration — same as Option 2 above, kept here for reference:
 
 ```json
 {
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "session_start",
-        "command": "infynon trace retrieve --layer canonical"
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '=== INFYNON TRACE: MEMORY OVERVIEW ===' && infynon trace retrieve --layer canonical 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init --repo <name> --owner <team> --user <you>' && echo '' && echo '--- Team Memory Index ---' && infynon trace retrieve --layer team 2>/dev/null | head -20 || echo '(no team notes)' && echo '' && echo '--- User Memory Index ---' && infynon trace retrieve --layer user 2>/dev/null | head -10 || echo '(no user notes)' && echo '' && echo '[TRACE-HOOK] Invoke @tracer agent. Ask the user which memory layers to load before proceeding.'",
+            "timeout": 20
+          }
+        ]
       }
     ],
-    "PostToolUse": [],
-    "Notification": [],
     "Stop": [
       {
-        "matcher": "",
-        "command": "infynon trace compact"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); if [ \"$(echo \"$INPUT\" | jq -r '.stop_hook_active // false')\" = \"true\" ]; then exit 0; fi; echo '[TRACE-HOOK] Task complete. Invoke @tracer agent to: (1) Auto-save session to user memory using infynon trace note add --layer user --tags session-output,auto-saved — no prompt needed. (2) Run infynon trace compact. (3) Ask user if highlights should also be saved to team memory.'",
+            "timeout": 5
+          }
+        ]
       }
     ]
   }
 }
 ```
 
-### Manual Hook Invocation
+### Manual Invocation (no hooks installed)
 
 If hooks are not configured, the agent should:
 
-1. At conversation start, run the session start workflow
-2. When the user says "done", "wrapping up", or "end session", run the session end workflow
+1. At session start — be explicitly invoked (`@tracer`) and run the session start workflow
+2. When the user says "done", "wrapping up", "end session" — run the session end workflow manually
 
 ## Rules
 
 - **Canonical memory is always loaded** — no exceptions, no user opt-out for this layer
-- **Team memory is opt-in at start** — ask the user, respect their answer
-- **User memory is personal** — only load for the current user
-- **Session end never writes canonical** — only team and user layers
-- **Compaction runs at end** — keeps storage clean
+- **Session start: ask before loading team/user** — present overview, wait for user choice
+- **Session end: auto-save user memory** — always, no prompt required
+- **Session end: ask before team memory** — opt-in only
+- **NEVER write canonical at session end** — flag candidates only
+- **Compaction always runs at end** — keeps storage clean
+- **Stop hook checks stop_hook_active** — prevents infinite loops
 - **Sync direction matters** — pull at start, push at end
-- **If no backend is configured** — use local file storage, skip sync steps
+- **If no backend configured** — use local file storage, skip sync steps
 
 ## Tips
 

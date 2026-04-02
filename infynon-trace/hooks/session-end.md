@@ -2,81 +2,88 @@
 
 ## Purpose
 
-Capture session learnings, clean up ephemeral notes, and sync state — without ever auto-writing canonical memory.
+When the main agent work completes: auto-save session observations to user memory (no prompt), then ask the user whether to also save to team memory.
 
 ## Trigger
 
-- User says "done", "wrapping up", "end session", or similar
-- Conversation is ending
-- Task is complete
+- `Stop` hook fires (when Claude finishes responding)
+- Fires every time Claude stops, but tracer only runs the full save workflow when `stop_hook_active` is false
 
-## Sequence
+## What the Hook Does
+
+The hook outputs an instruction for Claude to invoke `@tracer`. The tracer agent runs the save workflow using CLI commands only.
+
+## Tracer Agent Sequence
 
 ```
-1. ASK user about new observations
-   → "Did you learn anything worth saving from this session?"
-   → If yes: create team or user notes
-   → If no: skip
+1. AUTO-SAVE to user memory (no prompt — always run this)
+   → Summarize what was done during the session
+   → Run: infynon trace note add session-<timestamp> \
+         --title "<one-line summary of what was done>" \
+         --body "<key changes, findings, context for next session>" \
+         --layer user \
+         --author <current-user> \
+         --tags session-output,auto-saved \
+         --scope session
 
-2. UPDATE stale notes
-   → Any notes loaded at start that are now outdated
+2. COMPACT in background (cleanup stale notes)
+   → infynon trace compact
+
+3. ASK user:
+   → "Session saved to your user memory. Save highlights to team memory too? [y/n]"
+
+4. If YES — save to team memory:
+   → Identify what's worth sharing: bugs found, caveats, handoffs, risky areas
+   → Run: infynon trace note add team-<timestamp> \
+         --title "<what the team needs to know>" \
+         --body "<caveats, warnings, findings, handoff context>" \
+         --layer team \
+         --scope repo \
+         --tags session-output
+
+5. MARK stale notes:
+   → Any notes that are now outdated after this session:
    → infynon trace note update <id> --status stale
 
-3. UPDATE team memory with session findings
-   → Bug discoveries, caveats found, handoff updates
-   → infynon trace note add <id> --layer team --tags session-output
+6. FLAG promotion candidates (never write canonical directly):
+   → If anything confirmed architectural facts:
+   → infynon trace note add promote-<id> \
+         --title "Promote candidate: <topic>" \
+         --body "Confirmed during session. Needs validation before canonical." \
+         --layer team \
+         --tags promote,needs-review
 
-4. FLAG promotion candidates
-   → Notes reused without contradiction → tag with "promote"
-   → infynon trace note update <id> --tags promote,canonical-candidate
-
-5. COMPACT
-   → infynon trace compact
-   → Archives session-scoped and stale notes
-
-6. SYNC to remote
+7. SYNC if remote backend exists:
    → infynon trace sync --direction push
-
-7. NEVER auto-update canonical
-   → At most, flag for review
 ```
 
-## What to Save
+## What to Auto-Save to User Memory
 
-### Worth Saving (Team Layer)
+Always capture without asking:
+- What was worked on during the session
+- Key files touched or investigated
+- Any unfinished work to resume next time
+- Personal reminders and observations
+
+## What to Save to Team Memory (Only If User Says Yes)
+
+Only save things the whole team benefits from:
 - Bug discoveries: "Found a race condition in rate_limiter.rs"
 - Caveats: "Don't upgrade serde past 1.0.200 — breaks custom deserializer"
-- Handoff context: "Auth refactor is half done — see src/middleware/"
+- Handoff context: "Auth refactor half done — see src/middleware/"
 - PR context: "PR #155 changes the error handling pattern"
 
-### Worth Saving (User Layer)
-- Personal reminders: "Need to investigate the flaky test in CI"
-- Unfinished thoughts: "Might be able to simplify the sync logic"
-- Task context: "Was working on the payment webhook handler"
+## What NOT to Save
 
-### NOT Worth Saving
-- Trivial observations already visible in code
-- Debugging steps that led nowhere
-- Temporary workarounds that will be cleaned up in this PR
-- Anything that duplicates git history
-
-## What to Update
-
-### Mark as Stale
-- Notes about code that was changed during this session
-- Handoff notes for branches that were merged
-- Caveats that were resolved
-
-### Flag for Promotion
-- Team notes that have been validated by code changes in this session
-- Architecture patterns that were confirmed correct during debugging
-- API contracts that were tested and held true
+- Trivial observations already visible in code or git history
+- Dead-end debugging paths
+- Temporary workarounds being cleaned up in this session
 
 ## Rules
 
+- **User memory auto-save is mandatory** — no opt-out, no prompt
+- **Team memory is opt-in** — always ask before saving
 - **NEVER write to canonical layer** during session end
-- Only create notes the user explicitly approves
-- Keep notes concise — future sessions load these
-- Tag all session-end notes with `session-output` for traceability
-- Run compact to keep storage clean
-- If no remote backend, skip sync step
+- Tag all session-end notes with `session-output`
+- `infynon trace compact` always runs at session end
+- Skip sync step if no remote backend is configured

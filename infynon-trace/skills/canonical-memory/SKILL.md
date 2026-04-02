@@ -1,3 +1,9 @@
+---
+name: canonical-memory
+description: Manage canonical (validated, durable) memory in INFYNON Trace. Use when user asks about architecture decisions, API contracts, promotion flows, or auditing canonical notes.
+user-invocable: false
+---
+
 # Canonical Memory Management — Trace Skill
 
 ## When to Use

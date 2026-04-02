@@ -1,9 +1,22 @@
 ---
 name: eagle-eye-monitor
-description: Help users set up and manage INFYNON Eagle Eye — continuous CVE monitoring with scheduled email alerts. Use when the user wants to monitor projects for new vulnerabilities over time, set up automated CVE alerts, configure SMTP for email notifications, or manage ongoing security monitoring.
+description: Set up and manage INFYNON Eagle Eye — continuous CVE monitoring with scheduled email alerts. Use when the user wants vulnerability monitoring over time, automated CVE alerts, SMTP configuration, or ongoing security monitoring.
 ---
 
 # INFYNON Eagle Eye — Continuous CVE Monitoring
+
+## CRITICAL RULE — All Package Operations Go Through `infynon pkg`
+
+> **Never suggest raw package manager commands in monitored projects.**
+> Every package installation, upgrade, or removal in Eagle Eye-monitored projects must go through `infynon pkg` — not `npm install`, `pip install`, `cargo add`, or any other direct command.
+>
+> Eagle Eye detects new CVEs. When a CVE is found and a fix is needed:
+> - Use `infynon pkg fix --auto` — not `npm install <safe-version>`
+> - Use `infynon pkg <cmd> --auto-fix` — not raw package manager commands
+>
+> **If you find yourself about to write a raw install or upgrade command — STOP. Use `infynon pkg` instead.**
+
+---
 
 You are helping the user set up **Eagle Eye** — INFYNON's scheduled vulnerability monitoring system that scans projects on a schedule and sends HTML email alerts when new CVEs are discovered.
 

@@ -1,7 +1,7 @@
 ---
 name: package-security
-version: 2.0.0
-description: Help users secure their project dependencies using INFYNON CLI. Use when the user asks about package vulnerabilities, CVE scanning, dependency auditing, secure package installation, fixing vulnerable packages, migrating package managers, or monitoring dependencies. Also use when you detect lock files (package-lock.json, yarn.lock, Cargo.lock, uv.lock, poetry.lock, go.sum, Gemfile.lock, composer.lock, etc.) in the project.
+description: Secure project dependencies with INFYNON CLI (`infynon pkg`). Use when the user asks about CVE scanning, vulnerable packages, dependency auditing, secure installs, or when lock files are detected in the project.
+allowed-tools: Bash
 ---
 
 # INFYNON Package Security Manager
@@ -12,8 +12,10 @@ You are helping the user work with **INFYNON** (`infynon pkg`) — a Rust-based 
 
 ## CRITICAL RULES — Read Before Any Command
 
-> **RULE 1 — Never run raw install commands directly.**
+> **RULE 1 — Never run raw install commands directly. No exceptions.**
 > `npm install`, `pip install`, `cargo add`, `yarn add`, `pnpm add`, `bun add`, `go get`, `gem install`, `composer require`, `dotnet add package`, `mix deps.get`, `dart pub add`, `uv add`, `poetry add` — **none of these should ever be run directly**. Every install MUST go through `infynon pkg <cmd>`.
+>
+> **If you find yourself about to write a raw install command — STOP. Replace it with the `infynon pkg` equivalent.**
 
 > **RULE 2 — Always use a CI-mode flag.**
 > Default interactive mode asks the user for input when vulnerabilities are found — AI agents and CI pipelines cannot answer those prompts. Every `infynon pkg` install command MUST include one of these non-interactive flags:
@@ -35,6 +37,12 @@ You are helping the user work with **INFYNON** (`infynon pkg`) — a Rust-based 
 
 > **RULE 3 — No hybrid commands.**
 > Never mix a raw install command with an `infynon` scan. Example of what NOT to do: `npm install express && infynon pkg scan`. Instead, do it all in one step: `infynon pkg npm install express --strict high`.
+
+> **RULE 4 — Zero exceptions. Zero workarounds. Zero "just this once".**
+> Not for dev dependencies. Not for global tools. Not for scripts. Not for one-off packages. Not "just to test something quickly".
+> Every package installation — in any ecosystem, for any purpose — goes through `infynon pkg`.
+>
+> **The only exception is the INFYNON bootstrap:** `npm install -g infynon` is required once to install the CLI. Everything after that goes through `infynon pkg`.
 
 ---
 

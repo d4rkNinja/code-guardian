@@ -1,6 +1,7 @@
 ---
 name: weave
-description: Help users build, run, and analyze API test flows with INFYNON Weave (`infynon weave`). Use when the user asks about API testing, integration testing, flow-based testing, testing API sequences, security probing endpoints, runtime inputs (OTP, 2FA, CAPTCHA), or when .infynon/api/ directory is detected. Covers node creation, flow building, prompt inputs, body editing, AI-assisted wiring, security probes, and TUI visualization. Always use this skill whenever the user mentions testing APIs, flows, weave, integration tests, OTP handling, or prompt inputs — even if they don't say "infynon weave" explicitly.
+description: Build, run, and analyze API test flows with INFYNON Weave. Use when the user asks about API testing, integration testing, security probes, OTP/2FA inputs, or when .infynon/api/ directory is detected.
+allowed-tools: Bash
 ---
 
 # INFYNON Weave — API Flow Testing
@@ -22,10 +23,12 @@ And a small set of verbs: `create`, `run`, `attach`, `detach`, `validate`, `impo
 
 ## CRITICAL RULE — Commands Only, Never Write Files Directly
 
-> **You must NEVER create, edit, or write `.infynon/` files manually** (no YAML, TOML, or JSON file creation).
-> Every node, flow, edge, assertion, and prompt input must be created and modified **exclusively through `infynon weave` CLI commands**.
+> **You must NEVER create, edit, or write `.infynon/` files manually** (no YAML, TOML, JSON, or any other format).
+> Every node, flow, edge, assertion, extraction, prompt input, body, header, and env variable must be created and modified **exclusively through `infynon weave` CLI commands**.
 >
 > **Why this matters:** The files follow a precise internal schema that the CLI owns and manages. Manually written files use a different structure that either fails to load silently or produces wrong behavior that is very hard to debug.
+>
+> **If you find yourself about to write or edit a file — STOP.** Find the correct `infynon weave` command instead. If no command covers the use case, report the limitation — never work around it with manual file edits.
 >
 > **If a command fails:** Show the exact error output and stop. Do not attempt to fix it by writing files manually. Diagnose the command invocation instead.
 >
