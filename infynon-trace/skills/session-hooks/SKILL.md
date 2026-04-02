@@ -1,4 +1,4 @@
-# Session Hooks — Loom Skill
+# Session Hooks — Trace Skill
 
 ## When to Use
 
@@ -11,19 +11,19 @@ Activate this skill when:
 
 ## Overview
 
-Session hooks are the automated entry and exit points for Loom's memory operating layer. They ensure that:
+Session hooks are the automated entry and exit points for Trace's memory operating layer. They ensure that:
 
 - **On session start:** The agent is grounded in validated knowledge before writing any code
 - **On session end:** New observations are captured and memory is kept clean
 
 ## Installing Hooks (User Must Explicitly Ask)
 
-Hooks are **opt-in only**. When the user asks to set up loom hooks, install them into the **project's** `.claude/settings.json` (never system-level).
+Hooks are **opt-in only**. When the user asks to set up trace hooks, install them into the **project's** `.claude/settings.json` (never system-level).
 
 ### Option 1: Run the install script
 
 ```bash
-bash <path-to-code-guardian>/infynon-loom/hooks/install.sh <project-dir>
+bash <path-to-code-guardian>/infynon-trace/hooks/install.sh <project-dir>
 ```
 
 This creates or merges hooks into `<project-dir>/.claude/settings.json`.
@@ -41,7 +41,7 @@ Create `.claude/settings.json` in the project root:
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== LOOM: Loading Canonical Memory ===' && infynon loom retrieve --layer canonical 2>/dev/null || echo '[loom] Not initialized. Run: infynon loom init --repo <name> --owner <team> --user <you>' && echo '---' && echo '[loom-hook] Canonical memory loaded. Ask user: \"Would you like to load team memory for this session?\" If yes, run: infynon loom retrieve --layer team'",
+            "command": "echo '=== TRACE: Loading Canonical Memory ===' && infynon trace retrieve --layer canonical 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init --repo <name> --owner <team> --user <you>' && echo '---' && echo '[trace-hook] Canonical memory loaded. Ask user: \"Would you like to load team memory for this session?\" If yes, run: infynon trace retrieve --layer team'",
             "timeout": 15
           }
         ]
@@ -53,7 +53,7 @@ Create `.claude/settings.json` in the project root:
         "hooks": [
           {
             "type": "command",
-            "command": "echo '[loom-hook] Session ending. Remind user: \"Any observations worth saving? I can create team/user notes and run compaction.\" If user agrees, create notes with infynon loom note add, then run: infynon loom compact'",
+            "command": "echo '[trace-hook] Session ending. Remind user: \"Any observations worth saving? I can create team/user notes and run compaction.\" If user agrees, create notes with infynon trace note add, then run: infynon trace compact'",
             "timeout": 10
           }
         ]
@@ -65,7 +65,7 @@ Create `.claude/settings.json` in the project root:
 
 ### What the hooks do
 
-- **SessionStart:** Runs `infynon loom retrieve --layer canonical` and injects the output into Claude's context. Then prompts Claude to ask the user about loading team memory.
+- **SessionStart:** Runs `infynon trace retrieve --layer canonical` and injects the output into Claude's context. Then prompts Claude to ask the user about loading team memory.
 - **Stop:** Injects a reminder for Claude to ask the user about saving observations and running compaction.
 
 ### Important
@@ -73,7 +73,7 @@ Create `.claude/settings.json` in the project root:
 - Hooks go in the **project** `.claude/settings.json`, not `~/.claude/settings.json`
 - If `.claude/settings.json` already exists, the install script merges (requires `jq`)
 - The user must explicitly ask to install hooks — never auto-install
-- To remove hooks, delete the loom entries from `.claude/settings.json`
+- To remove hooks, delete the trace entries from `.claude/settings.json`
 
 ## Session Start Hook
 
@@ -83,17 +83,17 @@ Create `.claude/settings.json` in the project root:
 Session Start
     │
     ├── 1. Load canonical memory (always)
-    │       infynon loom retrieve --layer canonical
+    │       infynon trace retrieve --layer canonical
     │
     ├── 2. Ask user: "Load team memory?"
-    │       ├── Yes → infynon loom retrieve --layer team
+    │       ├── Yes → infynon trace retrieve --layer team
     │       └── No  → skip
     │
     ├── 3. (Optional) Load user memory
-    │       infynon loom retrieve --layer user --author <current-user>
+    │       infynon trace retrieve --layer user --author <current-user>
     │
     └── 4. Pull from remote if configured
-            infynon loom sync --direction pull
+            infynon trace sync --direction pull
 ```
 
 ### Implementation
@@ -103,7 +103,7 @@ Session Start
 Canonical memory contains architecture decisions, API contracts, and security constraints. The agent must always know these before making changes.
 
 ```bash
-infynon loom retrieve --layer canonical
+infynon trace retrieve --layer canonical
 ```
 
 Review the output. These are the ground rules for this codebase.
@@ -116,7 +116,7 @@ Team memory contains active caveats, handoffs, and working knowledge. It's usefu
 
 If yes:
 ```bash
-infynon loom retrieve --layer team
+infynon trace retrieve --layer team
 ```
 
 If the user says no, that's fine — team memory is optional at session start.
@@ -125,14 +125,14 @@ If the user says no, that's fine — team memory is optional at session start.
 
 If the user has personal notes from a previous session:
 ```bash
-infynon loom retrieve --layer user --author <username>
+infynon trace retrieve --layer user --author <username>
 ```
 
 **Step 4: Pull from remote**
 
 If a remote backend is configured, sync to get the latest notes:
 ```bash
-infynon loom sync --direction pull
+infynon trace sync --direction pull
 ```
 
 ## Session End Hook
@@ -147,16 +147,16 @@ Session End
     │       └── No  → skip
     │
     ├── 2. Mark session-scoped notes as stale
-    │       infynon loom note update <id> --status stale
+    │       infynon trace note update <id> --status stale
     │
     ├── 3. Flag promotion candidates
     │       Any team note reused 3+ times without contradiction
     │
     ├── 4. Compact stale and session notes
-    │       infynon loom compact
+    │       infynon trace compact
     │
     ├── 5. Push to remote if configured
-    │       infynon loom sync --direction push
+    │       infynon trace sync --direction push
     │
     └── 6. NEVER auto-update canonical memory
 ```
@@ -173,7 +173,7 @@ If yes, create notes in the appropriate layer:
 
 ```bash
 # Team observation
-infynon loom note add session-obs-<topic> \
+infynon trace note add session-obs-<topic> \
   --title "<What was learned>" \
   --body "<Details and context>" \
   --layer team \
@@ -181,7 +181,7 @@ infynon loom note add session-obs-<topic> \
   --tags session-output
 
 # Personal note
-infynon loom note add user-obs-<topic> \
+infynon trace note add user-obs-<topic> \
   --title "<Personal observation>" \
   --body "<Details>" \
   --layer user \
@@ -193,7 +193,7 @@ infynon loom note add user-obs-<topic> \
 If any notes loaded at session start are now outdated:
 
 ```bash
-infynon loom note update <id> --status stale
+infynon trace note update <id> --status stale
 ```
 
 **Step 3: Flag promotion candidates**
@@ -201,7 +201,7 @@ infynon loom note update <id> --status stale
 If a team note was referenced multiple times this session and remains accurate:
 
 ```bash
-infynon loom note update <id> --tags promote,canonical-candidate
+infynon trace note update <id> --tags promote,canonical-candidate
 ```
 
 **Step 4: Compact**
@@ -209,13 +209,13 @@ infynon loom note update <id> --tags promote,canonical-candidate
 Clean up session-scoped and stale notes:
 
 ```bash
-infynon loom compact
+infynon trace compact
 ```
 
 **Step 5: Push to remote**
 
 ```bash
-infynon loom sync --direction push
+infynon trace sync --direction push
 ```
 
 **Step 6: Never auto-update canonical**
@@ -223,7 +223,7 @@ infynon loom sync --direction push
 Even if the agent discovered something important, canonical updates require human review. At most, flag it:
 
 ```bash
-infynon loom note add promote-<topic> \
+infynon trace note add promote-<topic> \
   --title "Promote candidate: <topic>" \
   --body "Discovered during session. Needs validation before canonical promotion." \
   --layer team \
@@ -242,7 +242,7 @@ To run session hooks automatically, configure in Claude Code settings:
     "PreToolUse": [
       {
         "matcher": "session_start",
-        "command": "infynon loom retrieve --layer canonical"
+        "command": "infynon trace retrieve --layer canonical"
       }
     ],
     "PostToolUse": [],
@@ -250,7 +250,7 @@ To run session hooks automatically, configure in Claude Code settings:
     "Stop": [
       {
         "matcher": "",
-        "command": "infynon loom compact"
+        "command": "infynon trace compact"
       }
     ]
   }

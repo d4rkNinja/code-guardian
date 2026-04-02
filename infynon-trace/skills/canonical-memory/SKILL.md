@@ -1,4 +1,4 @@
-# Canonical Memory Management — Loom Skill
+# Canonical Memory Management — Trace Skill
 
 ## When to Use
 
@@ -12,7 +12,7 @@ Activate this skill when:
 
 ## What Is Canonical Memory
 
-Canonical memory is the **smallest, most durable** layer in Loom's three-tier system. It stores knowledge that has been deliberately validated and is intended to be trusted across the team.
+Canonical memory is the **smallest, most durable** layer in Trace's three-tier system. It stores knowledge that has been deliberately validated and is intended to be trusted across the team.
 
 **Not all memory should be treated equally.** "Truth memory which is always correct" is too strong a promise. Even canonical memory can become outdated when code changes. Use "canonical" or "validated" — never promise "always correct."
 
@@ -50,10 +50,10 @@ A note should only enter canonical after:
 
 ```bash
 # Find notes tagged for promotion
-infynon loom retrieve --tag promote
+infynon trace retrieve --tag promote
 
 # Or find long-lived, frequently-referenced team notes
-infynon loom retrieve --layer team --tag architecture
+infynon trace retrieve --layer team --tag architecture
 ```
 
 ### Step 2: Validate against current state
@@ -67,7 +67,7 @@ Before promoting, verify:
 ### Step 3: Create the canonical note
 
 ```bash
-infynon loom note add canonical-<topic> \
+infynon trace note add canonical-<topic> \
   --title "<Clear, factual statement>" \
   --body "<Details with validation evidence. Include: which PRs validated this, since which version, any constraints.>" \
   --layer canonical \
@@ -78,7 +78,7 @@ infynon loom note add canonical-<topic> \
 ### Step 4: Archive the source note
 
 ```bash
-infynon loom note update <original-id> --status archived
+infynon trace note update <original-id> --status archived
 ```
 
 ## Canonical Note Template
@@ -100,10 +100,10 @@ Canonical notes can go stale. Regularly audit:
 
 ```bash
 # List all canonical notes
-infynon loom retrieve --layer canonical
+infynon trace retrieve --layer canonical
 
 # Check for stale canonical notes
-infynon loom retrieve --layer canonical --tag stale
+infynon trace retrieve --layer canonical --tag stale
 ```
 
 For each canonical note, ask:
@@ -114,10 +114,10 @@ For each canonical note, ask:
 If stale:
 ```bash
 # Mark as stale for review
-infynon loom note update <id> --status stale
+infynon trace note update <id> --status stale
 
 # Or archive if no longer valid
-infynon loom note update <id> --status archived
+infynon trace note update <id> --status archived
 ```
 
 ## Tips
@@ -125,5 +125,5 @@ infynon loom note update <id> --status archived
 - Keep canonical memory small — 10-20 notes for a medium project is healthy
 - Every canonical note should be something a new team member needs to know on day one
 - If you're unsure whether something is canonical, it's probably team memory
-- Run `infynon loom retrieve --layer canonical` at session start to ground yourself
+- Run `infynon trace retrieve --layer canonical` at session start to ground yourself
 - Use SQL backends for canonical — they're durable, auditable, and queryable

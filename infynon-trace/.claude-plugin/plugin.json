@@ -1,0 +1,6 @@
+{
+  "name": "infynon-trace",
+  "version": "0.2.1",
+  "description": "INFYNON Trace — Shared coding memory operating layer with canonical/team/user memory tiers, Redis and SQL backends, session hooks, TUI inspection, and PR-linked notes",
+  "keywords": ["memory", "trace", "canonical", "team", "coding-memory", "notes", "sync", "tui", "hooks", "session"]
+}

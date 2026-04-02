@@ -1,6 +1,0 @@
-{
-  "name": "infynon-loom",
-  "version": "0.2.1",
-  "description": "INFYNON Loom — Shared coding memory operating layer with canonical/team/user memory tiers, Redis and SQL backends, session hooks, TUI inspection, and PR-linked notes",
-  "keywords": ["memory", "loom", "canonical", "team", "coding-memory", "notes", "sync", "tui", "hooks", "session"]
-}

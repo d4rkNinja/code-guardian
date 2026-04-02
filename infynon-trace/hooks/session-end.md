@@ -20,22 +20,22 @@ Capture session learnings, clean up ephemeral notes, and sync state — without 
 
 2. UPDATE stale notes
    → Any notes loaded at start that are now outdated
-   → infynon loom note update <id> --status stale
+   → infynon trace note update <id> --status stale
 
 3. UPDATE team memory with session findings
    → Bug discoveries, caveats found, handoff updates
-   → infynon loom note add <id> --layer team --tags session-output
+   → infynon trace note add <id> --layer team --tags session-output
 
 4. FLAG promotion candidates
    → Notes reused without contradiction → tag with "promote"
-   → infynon loom note update <id> --tags promote,canonical-candidate
+   → infynon trace note update <id> --tags promote,canonical-candidate
 
 5. COMPACT
-   → infynon loom compact
+   → infynon trace compact
    → Archives session-scoped and stale notes
 
 6. SYNC to remote
-   → infynon loom sync --direction push
+   → infynon trace sync --direction push
 
 7. NEVER auto-update canonical
    → At most, flag for review

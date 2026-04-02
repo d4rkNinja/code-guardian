@@ -28,13 +28,13 @@
       "keywords": ["api-testing", "flow-testing", "http", "rest", "assertions", "security-probes", "weave"]
     },
     {
-      "name": "infynon-loom",
-      "source": "./infynon-loom",
-      "description": "INFYNON Loom — Three-layer coding memory operating system (canonical/team/user) with session hooks, Redis and SQL backends, TUI inspection, PR-linked notes, and promotion workflows",
+      "name": "infynon-trace",
+      "source": "./infynon-trace",
+      "description": "INFYNON Trace — Three-layer coding memory operating system (canonical/team/user) with session hooks, Redis and SQL backends, TUI inspection, PR-linked notes, and promotion workflows",
       "version": "0.2.1",
       "category": "memory",
-      "tags": ["memory", "loom", "canonical", "team", "coding-memory", "notes", "tui", "hooks"],
-      "keywords": ["memory", "loom", "canonical", "team", "user", "session-hooks", "coding-memory"]
+      "tags": ["memory", "trace", "canonical", "team", "coding-memory", "notes", "tui", "hooks"],
+      "keywords": ["memory", "trace", "canonical", "team", "user", "session-hooks", "coding-memory"]
     }
   ]
 }

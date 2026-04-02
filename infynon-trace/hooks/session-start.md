@@ -14,20 +14,20 @@ Ground the agent in validated codebase knowledge before any work begins.
 
 ```
 1. ALWAYS load canonical memory
-   → infynon loom retrieve --layer canonical
+   → infynon trace retrieve --layer canonical
    → These are non-negotiable ground rules
 
 2. ASK user about team memory
    → "Would you like to load team memory for this session?"
-   → If yes: infynon loom retrieve --layer team
+   → If yes: infynon trace retrieve --layer team
    → If no: proceed without it
 
 3. OPTIONALLY load user memory
-   → infynon loom retrieve --layer user --author <default_user>
+   → infynon trace retrieve --layer user --author <default_user>
    → Only if user has personal notes from prior sessions
 
 4. SYNC if remote backend exists
-   → infynon loom sync --direction pull
+   → infynon trace sync --direction pull
    → Get latest notes from shared backends
 ```
 
@@ -72,5 +72,5 @@ Load team memory? [y/n]: y
 
 - Never skip canonical loading
 - Never auto-load team memory without asking
-- If `infynon loom` is not initialized, prompt user to run `infynon loom init`
+- If `infynon trace` is not initialized, prompt user to run `infynon trace init`
 - If no notes exist yet, inform user and continue

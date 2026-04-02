@@ -10,7 +10,7 @@ Universal secure package installation, CVE scanning, auto-fix, dependency auditi
 ### infynon-weave — API Flow Testing
 AI-driven node-based API flow testing with security probes, TUI visualization, assertion engine, context threading, and automated flow building.
 
-### infynon-loom — Shared Coding Memory
+### infynon-trace — Shared Coding Memory
 Three-layer memory operating system for codebases:
 - **Canonical memory** — architecture decisions, API contracts, security constraints (highest trust, promoted only)
 - **Team memory** — handoffs, PR notes, caveats, branch context (medium trust, agent-writable)
@@ -61,7 +61,7 @@ Pre-built binaries also available on the [Releases page](https://github.com/d4rk
 ```bash
 infynon --version
 infynon pkg --help
-infynon loom --help
+infynon trace --help
 ```
 
 ### Step 2: Install Claude Code Plugins
@@ -73,7 +73,7 @@ infynon loom --help
 # Install plugins
 /plugin install infynon-pkg@d4rkNinja
 /plugin install infynon-weave@d4rkNinja
-/plugin install infynon-loom@d4rkNinja
+/plugin install infynon-trace@d4rkNinja
 
 # Activate
 /reload-plugins
@@ -81,7 +81,7 @@ infynon loom --help
 
 Or load locally for development:
 ```bash
-claude --plugin-dir ./infynon-pkg --plugin-dir ./infynon-weave --plugin-dir ./infynon-loom
+claude --plugin-dir ./infynon-pkg --plugin-dir ./infynon-weave --plugin-dir ./infynon-trace
 ```
 
 ---
@@ -107,9 +107,9 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 | infynon-pkg | `cve-triage` | User needs help interpreting CVE scan results or prioritizing fixes |
 | infynon-pkg | `eagle-eye-monitor` | User wants continuous vulnerability monitoring with email alerts |
 | infynon-weave | `api-testing` | User asks about API testing, flow building, security probes, or Claude detects `.infynon/api/` in the project |
-| infynon-loom | `memory-ops` | User asks about coding memory, notes, handoffs, or Claude detects `.infynon/loom/` in the project |
-| infynon-loom | `canonical-memory` | User asks about architecture decisions, truth memory, or validated knowledge |
-| infynon-loom | `session-hooks` | Session starts or ends, user asks about memory hooks |
+| infynon-trace | `memory-ops` | User asks about coding memory, notes, handoffs, or Claude detects `.infynon/trace/` in the project |
+| infynon-trace | `canonical-memory` | User asks about architecture decisions, truth memory, or validated knowledge |
+| infynon-trace | `session-hooks` | Session starts or ends, user asks about memory hooks |
 
 ### Agents
 
@@ -117,11 +117,11 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 |--------|-------|---------|
 | infynon-pkg | `pkg-guardian` | Deep package security analysis, CVE triage, migration guidance, CI setup |
 | infynon-weave | `api-guardian` | API flow design, node wiring, security probe interpretation, CI pipelines |
-| infynon-loom | `loom-guardian` | Memory layer management, promotion workflows, session hooks, backend setup |
+| infynon-trace | `trace-guardian` | Memory layer management, promotion workflows, session hooks, backend setup |
 
 ### Hooks (Opt-In)
 
-Loom hooks are installed **per-project** in `.claude/settings.json` when the user explicitly asks. They are never auto-installed or placed in system-level settings.
+Trace hooks are installed **per-project** in `.claude/settings.json` when the user explicitly asks. They are never auto-installed or placed in system-level settings.
 
 | Hook | Trigger | Behavior |
 |------|---------|----------|
@@ -131,9 +131,9 @@ Loom hooks are installed **per-project** in `.claude/settings.json` when the use
 **Install hooks:**
 ```bash
 # Run the install script in your project directory
-bash <path-to-code-guardian>/infynon-loom/hooks/install.sh .
+bash <path-to-code-guardian>/infynon-trace/hooks/install.sh .
 
-# Or ask Claude: "Set up loom hooks for this project"
+# Or ask Claude: "Set up trace hooks for this project"
 ```
 
 Hooks are written to `<your-project>/.claude/settings.json` — not `~/.claude/settings.json`.
@@ -214,7 +214,7 @@ npm, yarn, pnpm, bun, pip, uv, poetry, cargo, go, gem, composer, nuget, hex, pub
 
 ---
 
-## Loom — Shared Coding Memory
+## Trace — Shared Coding Memory
 
 ### Three-Layer Memory Model
 
@@ -237,39 +237,39 @@ npm, yarn, pnpm, bun, pip, uv, poetry, cargo, go, gem, composer, nuget, hex, pub
 ### Quick Reference
 
 ```bash
-# Initialize Loom
-infynon loom init --repo my-project --owner team --user alien
+# Initialize Trace
+infynon trace init --repo my-project --owner team --user alien
 
 # Add a backend
-infynon loom source add-sql team-db \
+infynon trace source add-sql team-db \
   --engine sqlite \
-  --url sqlite://.infynon/loom/loom.db \
+  --url sqlite://.infynon/trace/trace.db \
   --user alien --default
 
 # Create notes
-infynon loom note add arch-decision \
+infynon trace note add arch-decision \
   --title "Auth uses middleware" \
   --body "All auth flows go through middleware" \
   --layer canonical --scope repo
 
-infynon loom note add handoff-payment \
+infynon trace note add handoff-payment \
   --title "Payment webhook incomplete" \
   --body "Stripe webhook handler needs idempotency testing" \
   --layer team --scope branch --target feature/payment
 
 # Retrieve memory
-infynon loom retrieve --layer canonical
-infynon loom retrieve --layer team --scope branch --target feature/payment
-infynon loom retrieve --tag handoff
+infynon trace retrieve --layer canonical
+infynon trace retrieve --layer team --scope branch --target feature/payment
+infynon trace retrieve --tag handoff
 
 # Sync
-infynon loom sync --direction both
+infynon trace sync --direction both
 
 # Compact stale notes
-infynon loom compact
+infynon trace compact
 
 # TUI
-infynon loom tui
+infynon trace tui
 ```
 
 ### Session Hooks
@@ -375,9 +375,9 @@ code-guardian/
 │   ├── agents/api-guardian.md        # API testing agent
 │   └── skills/
 │       └── api-testing/              # Flow building, probes, TUI
-├── infynon-loom/                     # Shared Coding Memory plugin
+├── infynon-trace/                     # Shared Coding Memory plugin
 │   ├── .claude-plugin/plugin.json
-│   ├── agents/loom-guardian.md       # Memory layer management agent
+│   ├── agents/trace-guardian.md       # Memory layer management agent
 │   ├── hooks/
 │   │   ├── session-start.md          # Load canonical + ask team memory
 │   │   ├── session-end.md            # Capture observations, compact, sync
