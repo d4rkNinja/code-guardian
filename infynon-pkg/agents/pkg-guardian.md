@@ -1,7 +1,6 @@
 ---
 name: pkg-guardian
 description: INFYNON Package Security Agent — intercepts package installations, scans for CVEs via OSV.dev, audits dependency trees, auto-fixes vulnerabilities, and monitors projects for new threats. Invoke when working with package dependencies, security auditing, or supply chain safety across npm, pip, uv, cargo, go, and 10+ other ecosystems.
-model: sonnet
 color: orange
 skills:
   - package-security

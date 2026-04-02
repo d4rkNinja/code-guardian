@@ -1,7 +1,6 @@
 ---
 name: weaver
 description: Specialized agent for INFYNON API flow testing. Invoke for deep API testing strategy, flow design, debugging failed runs, interpreting security probe results, and building CI pipelines around infynon weave commands.
-model: sonnet
 color: blue
 skills:
   - weave

@@ -1,7 +1,6 @@
 ---
 name: tracer
 description: Specialized agent for INFYNON Trace memory operating system. Invoke for memory management, session workflows, promotion flows, and TUI operations.
-model: sonnet
 color: cyan
 skills:
   - canonical-memory
