@@ -28,6 +28,7 @@ infynon weave node run <id>                           # Test single node
 infynon weave node prompt <id> add <var> --label "…" [--type text|boolean|select|multiselect] [--options "a,b,c"] # Add prompt input
 infynon weave flow create "name" --ai "desc"          # Build flow
 infynon weave flow run <id>                           # Run flow (BASE_URL from .infynon/.env)
+infynon weave flow run <id> --format json --no-input  # Machine-readable, non-interactive run
 infynon weave flow run <id> --set key=val             # Pre-seed context vars (skips prompts)
 infynon weave attach <from> <to> --carry vars         # Manual wiring
 infynon weave ai suggest --after <node-id>            # Get suggestions
@@ -101,7 +102,7 @@ infynon weave validate                                # Validate all nodes and f
 
 ## CI / Non-Interactive Mode
 
-When running in CI, use `--set` to pre-seed all prompt input vars so the flow never blocks:
+When running in CI, prefer `--format junit --no-input` and use `--set` to pre-seed all prompt input vars so the flow never blocks:
 
 ```bash
 infynon weave flow run auth-flow \

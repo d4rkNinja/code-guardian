@@ -29,7 +29,7 @@
 ```yaml
 - name: CVE scan + auto-fix gate
   run: |
-    infynon pkg scan --output markdown
+    infynon pkg scan --json
     infynon pkg fix --auto
 ```
 

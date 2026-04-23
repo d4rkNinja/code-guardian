@@ -47,7 +47,7 @@ Create `.claude/settings.json` in the project root:
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== INFYNON TRACE: MEMORY OVERVIEW ===' && infynon trace retrieve --layer canonical 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init --repo <name> --owner <team> --user <you>' && echo '' && echo '--- Team Memory Index ---' && infynon trace retrieve --layer team 2>/dev/null | head -20 || echo '(no team notes)' && echo '' && echo '--- User Memory Index ---' && infynon trace retrieve --layer user 2>/dev/null | head -10 || echo '(no user notes)' && echo '' && echo '[TRACE-HOOK] Invoke @tracer agent. Ask the user which memory layers to load before proceeding with the session.'",
+            "command": "echo '=== INFYNON TRACE: MEMORY OVERVIEW ===' && infynon trace retrieve --layer canonical --format markdown 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init' && echo '' && echo '--- Team Memory Index ---' && infynon trace retrieve --layer team --format markdown --limit 5 2>/dev/null || echo '(no team notes)' && echo '' && echo '--- User Memory Index ---' && infynon trace retrieve --layer user --format markdown --limit 5 2>/dev/null || echo '(no user notes)' && echo '' && echo '[TRACE-HOOK] Invoke @tracer agent. Ask the user which memory layers to load before proceeding with the session.'",
             "timeout": 20
           }
         ]
@@ -88,14 +88,14 @@ Create `.claude/settings.json` in the project root:
 Session Start
     │
     ├── 1. Load canonical memory (always)
-    │       infynon trace retrieve --layer canonical
+    │       infynon trace retrieve --layer canonical --format markdown
     │
     ├── 2. Ask user: "Load team memory?"
-    │       ├── Yes → infynon trace retrieve --layer team
+    │       ├── Yes → infynon trace retrieve --layer team --format markdown
     │       └── No  → skip
     │
     ├── 3. (Optional) Load user memory
-    │       infynon trace retrieve --layer user --author <current-user>
+    │       infynon trace retrieve --layer user --author <current-user> --format markdown
     │
     └── 4. Pull from remote if configured
             infynon trace sync --direction pull
@@ -108,7 +108,7 @@ Session Start
 Canonical memory contains architecture decisions, API contracts, and security constraints. The agent must always know these before making changes.
 
 ```bash
-infynon trace retrieve --layer canonical
+infynon trace retrieve --layer canonical --format markdown
 ```
 
 Review the output. These are the ground rules for this codebase.
@@ -121,7 +121,7 @@ Team memory contains active caveats, handoffs, and working knowledge. It's usefu
 
 If yes:
 ```bash
-infynon trace retrieve --layer team
+infynon trace retrieve --layer team --format markdown
 ```
 
 If the user says no, that's fine — team memory is optional at session start.
@@ -130,7 +130,7 @@ If the user says no, that's fine — team memory is optional at session start.
 
 If the user has personal notes from a previous session:
 ```bash
-infynon trace retrieve --layer user --author <username>
+infynon trace retrieve --layer user --author <username> --format markdown
 ```
 
 **Step 4: Pull from remote**
@@ -250,7 +250,7 @@ The canonical hook configuration — same as Option 2 above, kept here for refer
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== INFYNON TRACE: MEMORY OVERVIEW ===' && infynon trace retrieve --layer canonical 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init --repo <name> --owner <team> --user <you>' && echo '' && echo '--- Team Memory Index ---' && infynon trace retrieve --layer team 2>/dev/null | head -20 || echo '(no team notes)' && echo '' && echo '--- User Memory Index ---' && infynon trace retrieve --layer user 2>/dev/null | head -10 || echo '(no user notes)' && echo '' && echo '[TRACE-HOOK] Invoke @tracer agent. Ask the user which memory layers to load before proceeding.'",
+            "command": "echo '=== INFYNON TRACE: MEMORY OVERVIEW ===' && infynon trace retrieve --layer canonical --format markdown 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init' && echo '' && echo '--- Team Memory Index ---' && infynon trace retrieve --layer team --format markdown --limit 5 2>/dev/null || echo '(no team notes)' && echo '' && echo '--- User Memory Index ---' && infynon trace retrieve --layer user --format markdown --limit 5 2>/dev/null || echo '(no user notes)' && echo '' && echo '[TRACE-HOOK] Invoke @tracer agent. Ask the user which memory layers to load before proceeding.'",
             "timeout": 20
           }
         ]

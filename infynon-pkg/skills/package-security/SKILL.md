@@ -22,18 +22,20 @@ You are helping the user work with **INFYNON** (`infynon pkg`) — a Rust-based 
 >
 > | Flag | Behavior | Exit Code |
 > |------|----------|-----------|
-> | `--agent` | **JSON output mode — use this for all AI agent commands** | `0/1/2/3` |
+> | `--json` | **Machine-readable JSON - use this for new AI agent commands** | scan `0/1/2`, install `0/2/3/4` |
 > | `--strict` or `--strict all` | Block if any vulnerability found | `3` |
 > | `--strict critical` | Block only on critical CVEs | `3` |
 > | `--strict high` | Block on critical + high CVEs | `3` |
 > | `--strict medium` | Block on critical + high + medium | `3` |
 > | `--strict low` | Block on all except informational | `3` |
+> | `--no-input` | Fail instead of prompting when a decision would be required | `4` |
 > | `--auto-fix` | Silently upgrade to safe versions | `0` |
 > | `--skip-vulnerable` | Skip vulnerable, install clean ones | `0` |
 > | `--yes` | Install everything including vulnerable | `0` |
 >
-> **Recommended default for AI agents:** `--agent --strict high` (structured JSON output + blocks dangerous packages).
-> **Recommended default for CI scripts:** `--strict high`.
+> **Recommended default for AI agents:** `--json --strict high`.
+> **Recommended default for CI scripts:** `--strict high --no-input`.
+> **Compatibility note:** `--agent` still works as a deprecated alias for `--json`, but new scripts should use `--json`.
 
 > **RULE 3 — No hybrid commands.**
 > Never mix a raw install command with an `infynon` scan. Example of what NOT to do: `npm install express && infynon pkg scan`. Instead, do it all in one step: `infynon pkg npm install express --strict high`.
@@ -216,6 +218,7 @@ infynon pkg pub add http provider --auto-fix
 ### "I want to check my project for vulnerabilities"
 ```bash
 infynon pkg scan                                      # Auto-detects lock files, queries OSV.dev
+infynon pkg scan --json                               # Versioned machine-readable output
 infynon pkg scan --fix                                # Scan + interactive fix prompts
 infynon pkg scan --fix critical                       # Only fix critical severity
 infynon pkg scan --fix high                           # Fix critical + high
@@ -236,7 +239,10 @@ Fix generates ecosystem-correct install commands internally — no user input re
 ### "I need CI — no interactive prompts ever"
 ```bash
 # Hard gate — fail build on critical or high CVEs
-infynon pkg npm install express --strict high
+infynon pkg npm install express --strict high --no-input
+
+# Hard gate with machine-readable output
+infynon pkg npm install express --json --strict high
 
 # Auto-remediation — silently upgrade to safe versions
 infynon pkg npm install express --auto-fix
@@ -315,11 +321,13 @@ infynon pkg eagle-eye disable                         # Disable monitoring
 
 | Flag | Behavior | Exit Code | Best For |
 |------|----------|-----------|----------|
+| `--json` | Emit machine-readable JSON to stdout | scan `0/1/2`, install `0/2/3/4` | Agents, CI parsers |
 | `--strict` / `--strict all` | Block if any vulnerability found | `3` | Maximum security gate |
 | `--strict critical` | Block only on critical CVEs | `3` | Hard release gate |
 | `--strict high` | Block on critical + high CVEs | `3` | Recommended CI default |
 | `--strict medium` | Block on critical + high + medium | `3` | Strict pipelines |
 | `--strict low` | Block on all except informational | `3` | Zero-tolerance |
+| `--no-input` | Fail instead of prompting when a decision is required | `4` | Deterministic CI |
 | `--auto-fix` | Upgrade to safe versions silently | `0` | Auto-remediation |
 | `--skip-vulnerable` | Skip vulnerable, install clean | `0` | Permissive CI |
 | `--yes` | Install all including vulnerable | `0` | Audit-only workflows |
@@ -328,17 +336,17 @@ infynon pkg eagle-eye disable                         # Disable monitoring
 
 ---
 
-## Agent / AI Mode — Machine-Readable JSON Output
+## Machine-Readable Mode — JSON Output
 
-Add `--agent` to **any** command to suppress all human-readable output and emit a single JSON object to stdout instead. Designed for AI agents, Claude Code hooks, CI parsers, and MCP tool integrations.
+Add `--json` to the supported scan/install workflows to emit a single JSON object to stdout instead of human-readable summaries. Designed for AI agents, Claude Code hooks, CI parsers, and MCP tool integrations.
 
-### `infynon pkg scan --agent`
+### `infynon pkg scan --json`
 
 Scans all lock files silently. Always scans all detected files (no interactive prompt). Exits with a structured code.
 
 ```bash
-infynon pkg scan --agent
-infynon pkg scan --agent --pkg-file ./Cargo.lock
+infynon pkg scan --json
+infynon pkg scan --json --pkg-file ./Cargo.lock
 ```
 
 **Output — clean project:**
@@ -376,14 +384,14 @@ infynon pkg scan --agent --pkg-file ./Cargo.lock
 }
 ```
 
-### `infynon pkg <ecosystem> install <pkgs> --agent`
+### `infynon pkg <ecosystem> install <pkgs> --json`
 
 Checks packages before install, runs install silently, emits JSON result.
 
 ```bash
-infynon pkg npm install express lodash --agent --strict high
-infynon pkg pip install requests fastapi --agent
-infynon pkg cargo add serde tokio --agent --strict high
+infynon pkg npm install express lodash --json --strict high
+infynon pkg pip install requests fastapi --json
+infynon pkg cargo add serde tokio --json --strict high
 ```
 
 **Output — install blocked by --strict:**
@@ -417,7 +425,7 @@ infynon pkg cargo add serde tokio --agent --strict high
 }
 ```
 
-### Exit Codes (--agent mode)
+### Exit Codes (machine-readable mode)
 
 | Code | Meaning |
 |------|---------|
@@ -426,28 +434,28 @@ infynon pkg cargo add serde tokio --agent --strict high
 | `2` | Vulnerabilities found — MEDIUM, HIGH, or CRITICAL |
 | `3` | Blocked — `--strict` prevented installation |
 
-### Using --agent in AI Workflows
+### Using --json in AI Workflows
 
 ```bash
 # Parse scan result in a shell script / AI agent
-result=$(infynon pkg scan --agent)
+result=$(infynon pkg scan --json)
 status=$(echo "$result" | jq -r '.status')
 total=$(echo "$result" | jq -r '.summary.total')
 
 # Check before install — get structured result
-infynon pkg npm install express --agent --strict high
+infynon pkg npm install express --json --strict high
 # exit 0 = safe to proceed, exit 3 = blocked, parse JSON for details
 
 # Combine with --auto-fix for autonomous remediation
-infynon pkg npm install express lodash --agent --auto-fix
+infynon pkg npm install express lodash --json --auto-fix
 ```
 
-**When writing code that installs packages, always use `--agent` so the output is parseable by the AI:**
+**When writing code that installs packages, use `--json` so the output is parseable by the AI:**
 ```bash
 # Preferred pattern for AI-generated install commands
-infynon pkg uv add fastapi sqlalchemy --agent --strict high
-infynon pkg cargo add serde tokio reqwest --agent --auto-fix
-infynon pkg npm install express --agent --strict medium
+infynon pkg uv add fastapi sqlalchemy --json --strict high
+infynon pkg cargo add serde tokio reqwest --json --auto-fix
+infynon pkg npm install express --json --strict medium
 ```
 
 ---
@@ -457,7 +465,7 @@ infynon pkg npm install express --agent --strict medium
 ```yaml
 # Fail the build if critical or high CVEs are found
 - name: Secure install
-  run: infynon pkg npm install --strict high
+  run: infynon pkg npm install --strict high --no-input
 
 # Auto-upgrade vulnerable packages, never prompt
 - name: Secure install (auto-fix)
@@ -466,7 +474,7 @@ infynon pkg npm install express --agent --strict medium
 # Full audit gate before deploy
 - name: CVE audit gate
   run: |
-    infynon pkg scan --output markdown
+    infynon pkg scan --json
     infynon pkg fix --auto
 
 # Cargo project — block on any vulnerability

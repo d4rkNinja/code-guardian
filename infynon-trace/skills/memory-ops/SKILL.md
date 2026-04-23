@@ -1,6 +1,6 @@
 ---
 name: memory-ops
-description: Store, retrieve, and manage codebase knowledge in INFYNON Trace. Use when user asks about shared notes, handoffs, PR context, architecture memory, backends (Redis/SQL), or when .infynon/trace/ is detected.
+description: Store, retrieve, and manage codebase knowledge in INFYNON Trace. Use when user asks about shared notes, handoffs, PR context, architecture memory, backends (Redis/SQL), knowledge graph, or when .infynon/trace/ is detected.
 allowed-tools: Bash
 ---
 
@@ -17,6 +17,9 @@ Activate this skill when:
 - User wants to set up a memory backend (Redis or SQL)
 - User asks about Trace or `infynon trace`
 - `.infynon/trace/config.toml` is detected in the project
+- User asks about knowledge graph, entity relationships, or how things connect in the repo
+- User wants to visualize code relationships, file dependencies, or people-to-file mappings
+- User asks about graph diff, impact analysis, or path finding between entities
 
 ## Critical Rules
 
@@ -43,7 +46,7 @@ npm install -g infynon
 
 ```bash
 # Initialize with repo identity
-infynon trace init --repo <repo-name> --owner <team-name> --user <username>
+infynon trace init
 
 # Add a SQL backend (recommended for canonical + team memory)
 infynon trace source add-sql team-db \
@@ -112,10 +115,10 @@ infynon trace note add <id> \
 
 ```bash
 # All canonical memory
-infynon trace retrieve --layer canonical
+infynon trace retrieve --layer canonical --format markdown
 
 # Team notes for current branch
-infynon trace retrieve --layer team --scope branch --target <branch-name>
+infynon trace retrieve --layer team --scope branch --target <branch-name> --format markdown
 
 # Notes about a specific file
 infynon trace retrieve --scope file --target src/auth.rs
@@ -255,7 +258,7 @@ infynon trace schema redis
 infynon trace tui
 ```
 
-**5 Tabs:**
+**6 Tabs:**
 | Key | Tab | Purpose |
 |-----|-----|---------|
 | 1 | Overview | Trace status, config summary, layer counts |
@@ -263,12 +266,68 @@ infynon trace tui
 | 3 | Notes | Browse all notes, filter by layer/scope/status |
 | 4 | Packages | Package findings with `installed_by` attribution |
 | 5 | EditLog | History of note changes |
+| 6 | Graph | Knowledge graph: entities, edges, visual view, branch switching |
 
 **TUI Keys:**
 - `Tab` / `Shift+Tab` — navigate fields
 - `Enter` — edit field
 - `q` — quit
 - Arrow keys — scroll and navigate
+- `b` — switch branch (Graph tab)
+- `a` — toggle all-branches view (Graph tab)
+- `B` — auto-build graph (Graph tab)
+- `n` — new entity/edge (Graph tab)
+- `d` — delete entity/edge (Graph tab)
+
+### "I want to use the knowledge graph"
+
+The knowledge graph maps entities (files, packages, people, decisions, vulnerabilities) and relationships between them, scoped per branch.
+
+```bash
+# Auto-build graph from git history and existing notes
+infynon trace graph build
+
+# Add entities manually
+infynon trace graph entity add alice --kind person
+infynon trace graph entity add "POST /login" --kind endpoint --meta method=POST,auth=required
+infynon trace graph entity add CVE-2025-1234 --kind vulnerability
+infynon trace graph entity add auth-decision --kind decision
+
+# Add on a specific branch
+infynon trace graph entity add bob --kind person --branch feature/auth
+
+# Add relationships
+infynon trace graph edge add --from alice --to src/auth.rs --relation modified_by --evidence "commit:abc123"
+infynon trace graph edge add --from src/auth.rs --to ratatui --relation depends_on --weight 0.9
+infynon trace graph edge add --from CVE-2025-1234 --to ratatui --relation exposes
+
+# Query the graph
+infynon trace graph show --branch main
+infynon trace graph show --kind person
+infynon trace graph path CVE-2025-1234 alice
+infynon trace graph impact src/auth.rs
+infynon trace graph orphans
+infynon trace graph diff main feature/auth
+
+# Export / Import
+infynon trace graph export --format json -o graph.json
+infynon trace graph export --format dot -o graph.dot
+infynon trace graph import graph.json --branch imported
+
+# Manage
+infynon trace graph entity list --kind person
+infynon trace graph edge list --relation modified_by
+infynon trace graph entity remove alice
+infynon trace graph edge remove <edge-id>
+
+# TUI
+infynon trace graph tui
+infynon trace graph tui --branch feature/auth
+```
+
+**Entity kinds:** file, package, person, decision, endpoint, module, pr, branch, note, vulnerability
+
+**Relation types:** depends_on, introduced_by, modified_by, affects, decided_by, relates_to, supersedes, conflicts_with, documents, exposes, owns
 
 ## Tips
 
@@ -278,3 +337,7 @@ infynon trace tui
 - Run `infynon trace compact` regularly to clean session and stale notes
 - Use `--layer user` for personal scratch notes that shouldn't clutter team memory
 - Canonical memory should be the smallest layer — resist the urge to canonicalize everything
+- Use `infynon trace graph build` to auto-populate the graph from git history — it works from day zero
+- Use `infynon trace graph diff main feature/auth` to see knowledge divergence before merging
+- Use `infynon trace graph impact <entity>` to understand blast radius of changes
+- Graph data syncs with backends alongside notes — same `infynon trace sync` command

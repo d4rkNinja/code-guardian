@@ -168,7 +168,7 @@ Eagle Eye catches new CVEs between releases. Pair it with CI gates for defense-i
 - run: infynon pkg npm install --strict high
 
 # Nightly: full scan with report
-- run: infynon pkg scan --output markdown
+- run: infynon pkg scan --json
 ```
 
 Eagle Eye handles the ongoing monitoring; CI gates handle the moment of install.

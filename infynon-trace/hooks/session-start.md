@@ -15,13 +15,13 @@ The hook runs these commands automatically:
 
 ```bash
 # 1. Always show canonical memory
-infynon trace retrieve --layer canonical
+infynon trace retrieve --layer canonical --format markdown
 
 # 2. Show team memory index (first 20 lines)
-infynon trace retrieve --layer team | head -20
+infynon trace retrieve --layer team --format markdown --limit 5
 
 # 3. Show user memory index (first 10 lines)
-infynon trace retrieve --layer user | head -10
+infynon trace retrieve --layer user --format markdown --limit 5
 ```
 
 The output is injected into Claude's context. Claude then invokes `@tracer` to handle the interactive part.
@@ -40,8 +40,8 @@ After the hook injects the overview, `@tracer`:
    → [n] Skip additional layers
 
 2. LOAD chosen layers with commands:
-   If team:  infynon trace retrieve --layer team
-   If user:  infynon trace retrieve --layer user --author <current-user>
+   If team:  infynon trace retrieve --layer team --format markdown
+   If user:  infynon trace retrieve --layer user --author <current-user> --format markdown
    If sync:  infynon trace sync --direction pull
 
 3. CONFIRM what was loaded:
@@ -77,6 +77,6 @@ Which layers to load? [c/t/u/a/n]:
 
 - Canonical is always loaded — no opt-out
 - Never auto-load team or user memory without asking
-- If `infynon trace` is not initialized, prompt: `infynon trace init --repo <name> --owner <team> --user <you>`
+- If `infynon trace` is not initialized, prompt: `infynon trace init`
 - If no notes exist yet, inform user and continue immediately
 - Do not block the session — once layers are chosen, proceed

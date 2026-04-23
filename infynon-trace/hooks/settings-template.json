@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== TRACE: Loading Canonical Memory ===' && infynon trace retrieve --layer canonical 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init --repo <name> --owner <team> --user <you>' && echo '---' && echo '[trace-hook] Canonical memory loaded. Ask user: \"Would you like to load team memory for this session?\" If yes, run: infynon trace retrieve --layer team'",
+            "command": "echo '=== TRACE: Loading Canonical Memory ===' && infynon trace retrieve --layer canonical --format markdown 2>/dev/null || echo '[trace] Not initialized. Run: infynon trace init' && echo '---' && echo '[trace-hook] Canonical memory loaded. Ask user: \"Would you like to load team memory for this session?\" If yes, run: infynon trace retrieve --layer team --format markdown'",
             "timeout": 15
           }
         ]

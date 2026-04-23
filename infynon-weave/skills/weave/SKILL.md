@@ -376,10 +376,12 @@ infynon weave flow run <id>                                          # Run with 
 infynon weave flow run <id> --base-url http://localhost:3000         # Override base URL
 infynon weave flow run <id> --set token=abc123                       # Pre-seed context variable
 infynon weave flow run <id> --set token=abc123 --set user_id=42      # Multiple pre-seeded vars
+infynon weave flow run <id> --format json                            # Machine-readable stdout contract
+infynon weave flow run <id> --format junit --no-input                # CI-safe JUnit output
 infynon weave flow run <id> --output markdown                        # Save report to ./reports/
 infynon weave flow run <id> --output both                            # Save markdown + PDF
 infynon weave flow run-all --base-url http://localhost:3000          # Run every flow in sequence
-infynon weave flow run-all --set token=abc --output markdown         # Run-all with seed + report
+infynon weave flow run-all --format junit --no-input                 # Run-all in CI
 ```
 
 **Live output format:**
@@ -831,8 +833,8 @@ infynon weave node prompt <id> list|add [--label "..."] [--secret] [--default ".
 infynon weave flow create <name> [--ai "description"]
 infynon weave flow list
 infynon weave flow show <id>
-infynon weave flow run <id> [--base-url URL] [--set KEY=VALUE ...] [--output markdown|pdf|both]
-infynon weave flow run-all [--base-url URL] [--set KEY=VALUE ...] [--output markdown|pdf|both]
+infynon weave flow run <id> [--base-url URL] [--set KEY=VALUE ...] [--format json|markdown|junit] [--output markdown|pdf|both] [--no-input]
+infynon weave flow run-all [--base-url URL] [--set KEY=VALUE ...] [--format json|markdown|junit] [--output markdown|pdf|both] [--no-input]
 infynon weave flow remove <id>
 infynon weave flow merge <id1> <id2> --join-at <node-id> [--name NAME]
 ```

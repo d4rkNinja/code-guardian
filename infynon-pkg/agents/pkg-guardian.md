@@ -111,16 +111,18 @@ Pre-built binaries for all platforms → [github.com/d4rkNinja/infynon-cli/relea
 
 | Flag | Behavior | Exit Code | Notes |
 |------|---------|-----------|-------|
-| `--strict` / `--strict all` | Block on any vulnerability | `1` | Maximum security gate |
-| `--strict critical` | Block on critical only | `1` | Loose gate, hard failures only |
-| `--strict high` | Block on critical + high | `1` | **Recommended CI default** |
-| `--strict medium` | Block on critical + high + medium | `1` | Strict compliance |
-| `--strict low` | Block on all except informational | `1` | Zero-tolerance |
+| `--json` | Emit machine-readable JSON for scan/install workflows | scan `0/1/2`, install `0/2/3/4` | Preferred for agents and CI parsers |
+| `--strict` / `--strict all` | Block on any vulnerability | `3` | Maximum security gate |
+| `--strict critical` | Block on critical only | `3` | Loose gate, hard failures only |
+| `--strict high` | Block on critical + high | `3` | **Recommended CI default** |
+| `--strict medium` | Block on critical + high + medium | `3` | Strict compliance |
+| `--strict low` | Block on all except informational | `3` | Zero-tolerance |
+| `--no-input` | Fail instead of prompting when a decision would be required | `4` | Deterministic CI |
 | `--auto-fix` | Upgrade to safe versions silently; skip if no fix | `0` | Auto-remediation |
 | `--skip-vulnerable` | Skip vulnerable packages, install clean ones | `0` | Safe permissive |
 | `--yes` | Install all packages including vulnerable | `0` | Audit-only workflows |
 
-`--strict` exits with code `1` so CI pipelines detect the failure and stop the build.
+`--strict` exits with code `3` so CI pipelines detect the failure and stop the build.
 
 ---
 
@@ -205,7 +207,7 @@ infynon pkg pub add "http:^1.1.0" --auto-fix
 # Full audit gate
 - name: CVE audit gate
   run: |
-    infynon pkg scan --output markdown
+    infynon pkg scan --json
     infynon pkg fix --auto
 
 # Python project
@@ -243,6 +245,6 @@ When a user asks about package security, dependency management, or vulnerability
 - Scan results come from OSV.dev (Google's open-source vulnerability database)
 - Fix commands generate real install commands internally — no user input required
 - Eagle Eye requires SMTP configuration for email alerts
-- `--strict` exits with code `1` so CI pipelines detect the failure correctly
+- `--strict` exits with code `3` so CI pipelines detect the failure correctly
 - `--auto-fix`, `--skip-vulnerable`, and `--yes` never prompt stdin — safe for all CI environments and AI agents
 - **Interactive mode (no flag) is NOT safe for AI or CI use** — it waits for keyboard input that never comes

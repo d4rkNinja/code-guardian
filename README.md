@@ -1,4 +1,4 @@
-# Code Guardian
+﻿# Code Guardian
 
 Claude Code plugins for the **INFYNON** suite — package security, API flow testing, and shared coding memory.
 
@@ -97,7 +97,7 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 - Run session hooks to load/save memory automatically
 - Guide users through TUI keyboard shortcuts
 - Explain vulnerability scan results and fix options
-- Recommend CI-friendly flags (`--strict`, `--auto-fix`, `--skip-vulnerable`, `--agent`)
+- Recommend CI-friendly flags (`--strict`, `--no-input`, `--auto-fix`, `--skip-vulnerable`, `--json`)
 
 ### Skills
 
@@ -106,7 +106,7 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 | infynon-pkg | `package-security` | User asks about package vulnerabilities, CVE scanning, dependency auditing, or Claude detects lock files in the project |
 | infynon-pkg | `cve-triage` | User needs help interpreting CVE scan results or prioritizing fixes |
 | infynon-pkg | `eagle-eye-monitor` | User wants continuous vulnerability monitoring with email alerts |
-| infynon-weave | `api-testing` | User asks about API testing, flow building, security probes, or Claude detects `.infynon/api/` in the project |
+| infynon-weave | `weave` | User asks about API testing, flow building, security probes, or Claude detects `.infynon/api/` in the project |
 | infynon-trace | `memory-ops` | User asks about coding memory, notes, handoffs, or Claude detects `.infynon/trace/` in the project |
 | infynon-trace | `canonical-memory` | User asks about architecture decisions, truth memory, or validated knowledge |
 | infynon-trace | `session-hooks` | Session starts or ends, user asks about memory hooks |
@@ -116,7 +116,7 @@ These are **contextual skills** — once installed, Claude Code automatically kn
 | Plugin | Agent | Purpose |
 |--------|-------|---------|
 | infynon-pkg | `pkg-guardian` | Deep package security analysis, CVE triage, migration guidance, CI setup |
-| infynon-weave | `api-guardian` | API flow design, node wiring, security probe interpretation, CI pipelines |
+| infynon-weave | `weaver` | API flow design, node wiring, security probe interpretation, CI pipelines |
 | infynon-trace | `trace-guardian` | Memory layer management, promotion workflows, session hooks, backend setup |
 
 ### Hooks (Opt-In)
@@ -145,9 +145,10 @@ Hooks are written to `<your-project>/.claude/settings.json` — not `~/.claude/s
 ```bash
 # Scan for vulnerabilities
 infynon pkg scan
+infynon pkg scan --json
 
-# Scan + auto-fix
-infynon pkg scan --fix
+# Explain one package and its remediation path
+infynon pkg explain serde_json
 
 # Install packages securely (wraps any package manager)
 infynon pkg npm install express
@@ -156,13 +157,10 @@ infynon pkg cargo add serde
 
 # CI / non-interactive flags (no prompts)
 infynon pkg npm install express --strict high      # fail build on critical/high (exit 3)
+infynon pkg npm install express --json --strict high # machine-readable install contract
 infynon pkg npm install express --auto-fix         # auto-upgrade to safe versions
 infynon pkg npm install express --skip-vulnerable  # skip bad packages silently
 infynon pkg npm install express --yes              # install everything (audit-only CI)
-
-# AI agent mode — structured JSON output
-infynon pkg scan --agent                           # JSON scan: status/vulns/summary
-infynon pkg npm install express --agent --strict high   # JSON: installed/blocked/vulns
 
 # Auto-fix all vulnerabilities
 infynon pkg fix --auto
@@ -200,13 +198,14 @@ infynon pkg eagle-eye start
 
 | Flag | Behavior | Exit Code |
 |------|----------|-----------|
-| `--agent` | **JSON output — recommended for all AI agent commands** | `0/1/2/3` |
-| `--strict [LEVEL]` | Block if vulnerabilities at/above level are found | `3` on block |
+| `--json` | Machine-readable JSON to stdout for scan/install automation | scan `0/1/2`, install `0/2/3/4` |
+| `--strict [LEVEL]` | Block if vulnerabilities at/above level are found during install | `3` on block |
+| `--no-input` | Disable prompts and fail if a decision would be required | `4` on install |
 | `--auto-fix` | Upgrade to safe versions silently; skip if no fix | `0` |
 | `--skip-vulnerable` | Skip vulnerable packages, install clean ones | `0` |
 | `--yes` | Install all packages including vulnerable ones | `0` |
 
-**`--agent` exit codes:** `0` = clean · `1` = warnings · `2` = vulnerable · `3` = blocked
+**Compatibility note:** `--agent` still works as a deprecated alias for `--json`, but new docs and new scripts should use `--json`.
 
 ### Supported Ecosystems
 
@@ -237,10 +236,10 @@ npm, yarn, pnpm, bun, pip, uv, poetry, cargo, go, gem, composer, nuget, hex, pub
 ### Quick Reference
 
 ```bash
-# Initialize Trace
-infynon trace init --repo my-project --owner team --user alien
+# Initialize Trace with the default local SQLite backend
+infynon trace init
 
-# Add a backend
+# Add an optional shared backend
 infynon trace source add-sql team-db \
   --engine sqlite \
   --url sqlite://.infynon/trace/trace.db \
@@ -261,6 +260,7 @@ infynon trace note add handoff-payment \
 infynon trace retrieve --layer canonical
 infynon trace retrieve --layer team --scope branch --target feature/payment
 infynon trace retrieve --tag handoff
+infynon trace retrieve --scope package --target chrono --format markdown
 
 # Sync
 infynon trace sync --direction both
@@ -372,9 +372,9 @@ code-guardian/
 │       └── eagle-eye-monitor/        # Continuous vulnerability monitoring
 ├── infynon-weave/                    # API Flow Testing plugin
 │   ├── .claude-plugin/plugin.json
-│   ├── agents/api-guardian.md        # API testing agent
+│   ├── agents/api-weaver.md          # API testing agent
 │   └── skills/
-│       └── api-testing/              # Flow building, probes, TUI
+│       └── weave/                    # Flow building, probes, TUI
 ├── infynon-trace/                     # Shared Coding Memory plugin
 │   ├── .claude-plugin/plugin.json
 │   ├── agents/trace-guardian.md       # Memory layer management agent
@@ -400,3 +400,4 @@ MIT License
 ---
 
 **Code Guardian** by [d4rkNinja](https://github.com/d4rkNinja) — Powered by [INFYNON](https://github.com/d4rkNinja/infynon-cli)
+

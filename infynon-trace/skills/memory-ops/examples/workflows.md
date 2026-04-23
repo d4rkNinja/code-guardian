@@ -6,7 +6,7 @@ Set up Trace from scratch for a team repository.
 
 ```bash
 # Initialize Trace
-infynon trace init --repo my-api --owner backend-team --user alien
+infynon trace init
 
 # Add SQLite for local canonical + team storage
 infynon trace source add-sql local-db \
@@ -236,3 +236,45 @@ In the TUI:
 5. **Tab 5 (EditLog)** — Review recent note changes
 
 Use `Tab`/`Shift+Tab` to navigate fields, `Enter` to edit, `q` to quit.
+
+## Example 9: Knowledge Graph Exploration
+
+Use the knowledge graph to understand how entities in your repo relate to each other.
+
+```bash
+# Build the graph from git history (auto-creates entities and edges)
+infynon trace graph build
+
+# See who modified what
+infynon trace graph show --kind person
+
+# Find the connection between a vulnerability and a person
+infynon trace graph path CVE-2025-1234 alice
+
+# Understand the blast radius of a file change
+infynon trace graph impact src/auth.rs
+
+# Find disconnected entities
+infynon trace graph orphans
+
+# Compare knowledge between branches before merging
+infynon trace graph diff main feature/payments
+
+# Add a manual relationship
+infynon trace graph entity add "move-auth-to-middleware" --kind decision
+infynon trace graph edge add --from "move-auth-to-middleware" --to alice --relation decided_by
+
+# Export for visualization
+infynon trace graph export --format dot -o graph.dot
+# Render with: dot -Tpng graph.dot -o graph.png
+
+# Open the interactive graph TUI
+infynon trace graph tui
+```
+
+In the Graph TUI:
+1. **Entities view** — Browse all entities, create new ones (`n`), edit (`Enter`), delete (`d`)
+2. **Edges view** — Browse relationships, create/edit/delete
+3. **Visual view** — See entity connections grouped by kind, with highlighted edges
+4. **Branch picker** — Press `b` to switch branches, `a` for all-branches view
+5. **Auto-build** — Press `B` to build graph from git history directly in TUI
